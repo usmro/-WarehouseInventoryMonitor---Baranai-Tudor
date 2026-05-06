@@ -2,6 +2,7 @@
 #include "../src/Tranzactie.h"
 
 #include <cassert>
+#include <cstdio>
 #include <stdexcept>
 #include <vector>
 
@@ -127,6 +128,27 @@ void testTranzactieInvalida() {
     assert(exceptiePrinsa);
 }
 
+void testPersistentaProduse() {
+    const char* caleFisier = "build/test_produse.csv";
+
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(10, "Raft metalic", "Depozitare", 6, 350.0, 2));
+    depozit.adaugaProdus(Produs(11, "Scanner cod bare", "Electronice", 3, 420.0, 1));
+    depozit.salveazaProduseInFisier(caleFisier);
+
+    Depozit depozitIncarcat;
+    depozitIncarcat.incarcaProduseDinFisier(caleFisier);
+
+    std::vector<Produs> produse = depozitIncarcat.listaProduse();
+    assert(produse.size() == 2);
+    assert(produse[0].getId() == 10);
+    assert(produse[0].getCategorie() == "Depozitare");
+    assert(produse[1].getId() == 11);
+    assert(produse[1].getNume() == "Scanner cod bare");
+
+    std::remove(caleFisier);
+}
+
 int main() {
     testAdaugareProdus();
     testIdDuplicat();
@@ -138,6 +160,7 @@ int main() {
     testSugestiiSortate();
     testTranzactieTemplate();
     testTranzactieInvalida();
+    testPersistentaProduse();
 
     return 0;
 }

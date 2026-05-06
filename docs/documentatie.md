@@ -10,6 +10,8 @@ Aplicatia are rolul de a gestiona produsele dintr-un depozit. Utilizatorul poate
 
 Interfata de consola este organizata ca un catalog de produse, inspirat de magazine precum IKEA sau Altex: fiecare produs are categorie, pret, cantitate disponibila si status de stoc.
 
+Datele produselor sunt pastrate in fisierul `data/produse.csv`, care functioneaza ca o baza de date simpla pentru proiect. La pornire, aplicatia incearca sa incarce produsele din acest fisier. Dupa operatii importante precum adaugare, eliminare, restock sau vanzare, catalogul este salvat automat.
+
 ## Clase principale
 
 ### Produs
@@ -47,6 +49,8 @@ Metode importante:
 - `sorteazaDupaPret()`
 - `raportProduseSubPrag()`
 - `sugereazaReaprovizionare()`
+- `incarcaProduseDinFisier()`
+- `salveazaProduseInFisier()`
 
 ### Furnizor
 
@@ -70,17 +74,17 @@ Clasa template `Tranzactie<TP>` modeleaza o tranzactie de stoc. Tipul poate fi `
 - supraincarcare operatori: `+=` si `-=` pentru actualizarea cantitatii;
 - exceptii: sunt aruncate exceptii pentru ID duplicat, produs lipsa, cantitati invalide si stoc insuficient;
 - STL: se folosesc `std::unordered_map` si `std::vector`;
+- persistenta datelor: catalogul este citit si salvat in format CSV;
 - cautare, filtrare si sortare pentru comportament de catalog;
 - template: `Tranzactie<TP>` permite reutilizarea logicii pentru intrari si iesiri.
 
 ## Testare
 
-Testele sunt implementate in `tests/test_inventory.cpp` folosind `assert`. Ele verifica adaugarea produselor, ID-uri duplicate, operatorii de cantitate, statusul de stoc, cautarea, filtrarea, sortarea dupa pret, exceptiile, raportul de produse sub prag, sortarea sugestiilor de reaprovizionare si clasa template pentru tranzactii.
+Testele sunt implementate in `tests/test_inventory.cpp` folosind `assert`. Ele verifica adaugarea produselor, ID-uri duplicate, operatorii de cantitate, statusul de stoc, cautarea, filtrarea, sortarea dupa pret, exceptiile, raportul de produse sub prag, sortarea sugestiilor de reaprovizionare, clasa template pentru tranzactii si persistenta produselor in fisier CSV.
 
 ## Posibile imbunatatiri
 
-- salvarea produselor in fisiere;
+- istoric complet al tranzactiilor intr-un fisier separat;
 - cautare dupa nume;
 - interfata grafica;
 - rapoarte exportate in CSV;
-- istoric complet al tranzactiilor.
