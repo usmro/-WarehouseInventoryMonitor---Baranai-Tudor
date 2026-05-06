@@ -4,6 +4,7 @@
 #include "Furnizor.h"
 #include "Produs.h"
 
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -20,6 +21,9 @@ public:
 
     const Produs& cautaProdus(int id) const;
     std::vector<Produs> listaProduse() const;
+    std::vector<Produs> cautaProduseDupaNume(const std::string& text) const;
+    std::vector<Produs> filtreazaDupaCategorie(const std::string& categorie) const;
+    std::vector<Produs> sorteazaDupaPret(bool crescator = true) const;
     std::vector<Produs> raportProduseSubPrag() const;
     std::vector<Produs> sugereazaReaprovizionare() const;
 
