@@ -8,6 +8,8 @@ WarehouseInventoryMonitor - Sistem de Monitorizare a Stocurilor unui Depozit
 
 Aplicatia are rolul de a gestiona produsele dintr-un depozit. Utilizatorul poate adauga produse, elimina produse, actualiza cantitati, afisa lista produselor si genera rapoarte pentru produsele care au stocul sub pragul de alerta.
 
+Interfata de consola este organizata ca un catalog de produse, inspirat de magazine precum IKEA sau Altex: fiecare produs are categorie, pret, cantitate disponibila si status de stoc.
+
 ## Clase principale
 
 ### Produs
@@ -18,6 +20,7 @@ Atribute:
 
 - `id`
 - `nume`
+- `categorie`
 - `cantitate`
 - `pret`
 - `pragAlerta`
@@ -25,6 +28,7 @@ Atribute:
 Metode importante:
 
 - `esteSubPrag()` verifica daca produsul trebuie reaprovizionat;
+- `getStatusStoc()` returneaza `In stoc`, `Stoc redus` sau `Indisponibil`;
 - `operator+=` adauga cantitate in stoc;
 - `operator-=` scade cantitate din stoc.
 
@@ -38,6 +42,9 @@ Metode importante:
 - `eliminaProdus()`
 - `restockProdus()`
 - `vindeProdus()`
+- `cautaProduseDupaNume()`
+- `filtreazaDupaCategorie()`
+- `sorteazaDupaPret()`
 - `raportProduseSubPrag()`
 - `sugereazaReaprovizionare()`
 
@@ -63,11 +70,12 @@ Clasa template `Tranzactie<TP>` modeleaza o tranzactie de stoc. Tipul poate fi `
 - supraincarcare operatori: `+=` si `-=` pentru actualizarea cantitatii;
 - exceptii: sunt aruncate exceptii pentru ID duplicat, produs lipsa, cantitati invalide si stoc insuficient;
 - STL: se folosesc `std::unordered_map` si `std::vector`;
+- cautare, filtrare si sortare pentru comportament de catalog;
 - template: `Tranzactie<TP>` permite reutilizarea logicii pentru intrari si iesiri.
 
 ## Testare
 
-Testele sunt implementate in `tests/test_inventory.cpp` folosind `assert`. Ele verifica adaugarea produselor, ID-uri duplicate, operatorii de cantitate, exceptiile, raportul de produse sub prag, sortarea sugestiilor de reaprovizionare si clasa template pentru tranzactii.
+Testele sunt implementate in `tests/test_inventory.cpp` folosind `assert`. Ele verifica adaugarea produselor, ID-uri duplicate, operatorii de cantitate, statusul de stoc, cautarea, filtrarea, sortarea dupa pret, exceptiile, raportul de produse sub prag, sortarea sugestiilor de reaprovizionare si clasa template pentru tranzactii.
 
 ## Posibile imbunatatiri
 

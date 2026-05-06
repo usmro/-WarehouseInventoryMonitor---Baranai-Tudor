@@ -6,11 +6,13 @@
 +----------------+
 | - id           |
 | - nume         |
+| - categorie    |
 | - cantitate    |
 | - pret         |
 | - pragAlerta   |
 +----------------+
 | + esteSubPrag  |
+| + getStatusStoc|
 | + operator+=   |
 | + operator-=   |
 +----------------+
@@ -25,6 +27,9 @@
 | + eliminaProdus         |
 | + restockProdus         |
 | + vindeProdus           |
+| + cautaProduseDupaNume  |
+| + filtreazaDupaCategorie|
+| + sorteazaDupaPret      |
 | + raportProduseSubPrag  |
 | + sugereazaReaprovizionare |
 +-------------------------+

@@ -13,19 +13,16 @@ void afiseazaProduse(const std::vector<Produs>& produse) {
         return;
     }
 
-    std::cout << std::left << std::setw(8) << "ID"
-              << std::setw(20) << "Nume"
-              << std::setw(12) << "Cantitate"
-              << std::setw(10) << "Pret"
-              << std::setw(12) << "Prag" << '\n';
-
     for (const Produs& produs : produse) {
-        std::cout << std::left << std::setw(8) << produs.getId()
-                  << std::setw(20) << produs.getNume()
-                  << std::setw(12) << produs.getCantitate()
-                  << std::setw(10) << produs.getPret()
-                  << std::setw(12) << produs.getPragAlerta() << '\n';
+        std::cout << "\n----------------------------------------\n"
+                  << "[" << produs.getId() << "] " << produs.getNume() << '\n'
+                  << "Categorie: " << produs.getCategorie() << '\n'
+                  << "Pret: " << std::fixed << std::setprecision(2) << produs.getPret() << " lei\n"
+                  << "Stoc: " << produs.getCantitate() << " bucati\n"
+                  << "Prag alerta: " << produs.getPragAlerta() << '\n'
+                  << "Status: " << produs.getStatusStoc() << '\n';
     }
+    std::cout << "----------------------------------------\n";
 }
 
 void curataInput() {
@@ -70,6 +67,10 @@ void afiseazaMeniu() {
               << "5. Afiseaza toate produsele\n"
               << "6. Raport produse sub prag\n"
               << "7. Sugestii reaprovizionare\n"
+              << "8. Cauta produs dupa nume\n"
+              << "9. Filtreaza dupa categorie\n"
+              << "10. Sorteaza dupa pret crescator\n"
+              << "11. Sorteaza dupa pret descrescator\n"
               << "0. Iesire\n"
               << "Alege optiunea: ";
 }
@@ -91,10 +92,11 @@ int main() {
             case 1: {
                 int id = citesteInt("ID: ");
                 std::string nume = citesteText("Nume: ");
+                std::string categorie = citesteText("Categorie: ");
                 int cantitate = citesteInt("Cantitate: ");
                 double pret = citesteDouble("Pret: ");
                 int prag = citesteInt("Prag alerta: ");
-                depozit.adaugaProdus(Produs(id, nume, cantitate, pret, prag));
+                depozit.adaugaProdus(Produs(id, nume, categorie, cantitate, pret, prag));
                 std::cout << "Produs adaugat.\n";
                 break;
             }
@@ -128,6 +130,22 @@ int main() {
                 break;
             case 7:
                 afiseazaProduse(depozit.sugereazaReaprovizionare());
+                break;
+            case 8: {
+                std::string text = citesteText("Text cautat in numele produsului: ");
+                afiseazaProduse(depozit.cautaProduseDupaNume(text));
+                break;
+            }
+            case 9: {
+                std::string categorie = citesteText("Categorie: ");
+                afiseazaProduse(depozit.filtreazaDupaCategorie(categorie));
+                break;
+            }
+            case 10:
+                afiseazaProduse(depozit.sorteazaDupaPret(true));
+                break;
+            case 11:
+                afiseazaProduse(depozit.sorteazaDupaPret(false));
                 break;
             case 0:
                 std::cout << "Aplicatia se inchide.\n";

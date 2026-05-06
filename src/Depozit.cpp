@@ -1,7 +1,16 @@
 #include "Depozit.h"
 
 #include <algorithm>
+#include <cctype>
 #include <stdexcept>
+
+std::string textMic(const std::string& text) {
+    std::string rezultat = text;
+    std::transform(rezultat.begin(), rezultat.end(), rezultat.begin(), [](unsigned char caracter) {
+        return static_cast<char>(std::tolower(caracter));
+    });
+    return rezultat;
+}
 
 void Depozit::adaugaProdus(const Produs& produs) {
     if (produse.find(produs.getId()) != produse.end()) {
@@ -47,6 +56,49 @@ std::vector<Produs> Depozit::listaProduse() const {
     }
     std::sort(rezultat.begin(), rezultat.end(), [](const Produs& a, const Produs& b) {
         return a.getId() < b.getId();
+    });
+    return rezultat;
+}
+
+std::vector<Produs> Depozit::cautaProduseDupaNume(const std::string& text) const {
+    std::vector<Produs> rezultat;
+    std::string textCautat = textMic(text);
+
+    for (const auto& pereche : produse) {
+        if (textMic(pereche.second.getNume()).find(textCautat) != std::string::npos) {
+            rezultat.push_back(pereche.second);
+        }
+    }
+
+    std::sort(rezultat.begin(), rezultat.end(), [](const Produs& a, const Produs& b) {
+        return a.getNume() < b.getNume();
+    });
+    return rezultat;
+}
+
+std::vector<Produs> Depozit::filtreazaDupaCategorie(const std::string& categorie) const {
+    std::vector<Produs> rezultat;
+    std::string categorieCautata = textMic(categorie);
+
+    for (const auto& pereche : produse) {
+        if (textMic(pereche.second.getCategorie()) == categorieCautata) {
+            rezultat.push_back(pereche.second);
+        }
+    }
+
+    std::sort(rezultat.begin(), rezultat.end(), [](const Produs& a, const Produs& b) {
+        return a.getNume() < b.getNume();
+    });
+    return rezultat;
+}
+
+std::vector<Produs> Depozit::sorteazaDupaPret(bool crescator) const {
+    std::vector<Produs> rezultat = listaProduse();
+    std::sort(rezultat.begin(), rezultat.end(), [crescator](const Produs& a, const Produs& b) {
+        if (a.getPret() == b.getPret()) {
+            return a.getId() < b.getId();
+        }
+        return crescator ? a.getPret() < b.getPret() : a.getPret() > b.getPret();
     });
     return rezultat;
 }

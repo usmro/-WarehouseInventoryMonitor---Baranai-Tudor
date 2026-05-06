@@ -7,11 +7,12 @@
 
 void testAdaugareProdus() {
     Depozit depozit;
-    depozit.adaugaProdus(Produs(1, "Laptop", 5, 2500.0, 2));
+    depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
 
     const Produs& produs = depozit.cautaProdus(1);
     assert(produs.getId() == 1);
     assert(produs.getNume() == "Laptop");
+    assert(produs.getCategorie() == "Electronice");
     assert(produs.getCantitate() == 5);
 }
 
@@ -51,6 +52,16 @@ void testStocInsuficient() {
     assert(exceptiePrinsa);
 }
 
+void testStatusStoc() {
+    Produs inStoc(1, "Dulap", "Mobilier", 8, 900.0, 3);
+    Produs stocRedus(2, "Bec LED", "Accesorii", 2, 15.0, 5);
+    Produs indisponibil(3, "Frigider", "Electrocasnice", 0, 1800.0, 2);
+
+    assert(inStoc.getStatusStoc() == "In stoc");
+    assert(stocRedus.getStatusStoc() == "Stoc redus");
+    assert(indisponibil.getStatusStoc() == "Indisponibil");
+}
+
 void testRaportSubPrag() {
     Depozit depozit;
     depozit.adaugaProdus(Produs(1, "Laptop", 5, 2500.0, 2));
@@ -61,6 +72,25 @@ void testRaportSubPrag() {
     assert(raport.size() == 2);
     assert(raport[0].getId() == 2);
     assert(raport[1].getId() == 3);
+}
+
+void testCautareFiltrareSortareCatalog() {
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(1, "Laptop Lenovo", "Electronice", 5, 2500.0, 2));
+    depozit.adaugaProdus(Produs(2, "Dulap alb", "Mobilier", 3, 700.0, 1));
+    depozit.adaugaProdus(Produs(3, "Mouse wireless", "Electronice", 20, 80.0, 5));
+
+    std::vector<Produs> cautare = depozit.cautaProduseDupaNume("lap");
+    assert(cautare.size() == 1);
+    assert(cautare[0].getId() == 1);
+
+    std::vector<Produs> electronice = depozit.filtreazaDupaCategorie("electronice");
+    assert(electronice.size() == 2);
+
+    std::vector<Produs> sortate = depozit.sorteazaDupaPret(true);
+    assert(sortate[0].getId() == 3);
+    assert(sortate[1].getId() == 2);
+    assert(sortate[2].getId() == 1);
 }
 
 void testSugestiiSortate() {
@@ -102,7 +132,9 @@ int main() {
     testIdDuplicat();
     testOperatoriCantitate();
     testStocInsuficient();
+    testStatusStoc();
     testRaportSubPrag();
+    testCautareFiltrareSortareCatalog();
     testSugestiiSortate();
     testTranzactieTemplate();
     testTranzactieInvalida();
