@@ -26,6 +26,8 @@ public:
     std::vector<Produs> sorteazaDupaPret(bool crescator = true) const;
     std::vector<Produs> raportProduseSubPrag() const;
     std::vector<Produs> sugereazaReaprovizionare() const;
+    void incarcaProduseDinFisier(const std::string& caleFisier);
+    void salveazaProduseInFisier(const std::string& caleFisier) const;
 
     void adaugaFurnizor(const Furnizor& furnizor);
     void asociazaProdusCuFurnizor(int furnizorId, int produsId);

@@ -31,6 +31,8 @@
 | + filtreazaDupaCategorie|
 | + sorteazaDupaPret      |
 | + raportProduseSubPrag  |
+| + incarcaProduseDinFisier |
+| + salveazaProduseInFisier |
 | + sugereazaReaprovizionare |
 +-------------------------+
 

@@ -11,6 +11,7 @@ The application allows a warehouse operator to:
 - add and remove products;
 - restock products;
 - register product sales;
+- keep product data stored in `data/produse.csv`;
 - list all products;
 - display products in a catalog style, inspired by stores like IKEA or Altex;
 - search products by name;
@@ -24,6 +25,7 @@ The application allows a warehouse operator to:
 - classes and objects: `Produs`, `Depozit`, `Furnizor`, `Tranzactie<TP>`;
 - encapsulation through private fields and public methods;
 - STL containers: `std::unordered_map` and `std::vector`;
+- file persistence using CSV storage;
 - catalog operations: search, filter and sorting;
 - operator overloading: `Produs::operator+=` and `Produs::operator-=`;
 - exception handling for invalid IDs, duplicate products and invalid stock operations;
@@ -35,6 +37,7 @@ The application allows a warehouse operator to:
 src/        C++ source files
 tests/      simple unit tests
 docs/       project documentation and UML notes
+data/       CSV product catalog used as persistent storage
 Makefile    build and test commands
 README.md   project overview and instructions
 ```
@@ -92,8 +95,26 @@ ctest --test-dir build
 9. Filtreaza dupa categorie
 10. Sorteaza dupa pret crescator
 11. Sorteaza dupa pret descrescator
+12. Salveaza catalog
+13. Incarca catalog
 0. Iesire
 ```
+
+## Data Storage
+
+The product catalog is stored in:
+
+```text
+data/produse.csv
+```
+
+The file uses this format:
+
+```text
+id;nume;categorie;cantitate;pret;pragAlerta
+```
+
+The application automatically tries to load the catalog when it starts. Product changes are saved back to the CSV file after add, delete, restock and sale operations.
 
 ## Catalog Display
 

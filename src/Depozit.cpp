@@ -2,6 +2,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <stdexcept>
 
 std::string textMic(const std::string& text) {
@@ -10,6 +13,12 @@ std::string textMic(const std::string& text) {
         return static_cast<char>(std::tolower(caracter));
     });
     return rezultat;
+}
+
+void valideazaTextPentruFisier(const std::string& text) {
+    if (text.find(';') != std::string::npos) {
+        throw std::invalid_argument("Textul nu poate contine caracterul ';'.");
+    }
 }
 
 void Depozit::adaugaProdus(const Produs& produs) {
@@ -125,6 +134,82 @@ std::vector<Produs> Depozit::sugereazaReaprovizionare() const {
         return a.getCantitate() < b.getCantitate();
     });
     return rezultat;
+}
+
+void Depozit::incarcaProduseDinFisier(const std::string& caleFisier) {
+    std::ifstream fisier(caleFisier);
+    if (!fisier.is_open()) {
+        throw std::runtime_error("Fisierul de date nu poate fi deschis pentru citire.");
+    }
+
+    std::unordered_map<int, Produs> produseIncarcate;
+    std::string linie;
+    int numarLinie = 0;
+
+    while (std::getline(fisier, linie)) {
+        ++numarLinie;
+        if (linie.empty() || linie[0] == '#') {
+            continue;
+        }
+
+        std::stringstream flux(linie);
+        std::string idText;
+        std::string nume;
+        std::string categorie;
+        std::string cantitateText;
+        std::string pretText;
+        std::string pragText;
+
+        if (!std::getline(flux, idText, ';') ||
+            !std::getline(flux, nume, ';') ||
+            !std::getline(flux, categorie, ';') ||
+            !std::getline(flux, cantitateText, ';') ||
+            !std::getline(flux, pretText, ';') ||
+            !std::getline(flux, pragText, ';')) {
+            throw std::runtime_error("Linie invalida in fisierul de date: " + std::to_string(numarLinie));
+        }
+
+        Produs produs(
+            std::stoi(idText),
+            nume,
+            categorie,
+            std::stoi(cantitateText),
+            std::stod(pretText),
+            std::stoi(pragText)
+        );
+
+        if (produseIncarcate.find(produs.getId()) != produseIncarcate.end()) {
+            throw std::runtime_error("ID duplicat in fisierul de date: " + std::to_string(produs.getId()));
+        }
+        produseIncarcate.emplace(produs.getId(), produs);
+    }
+
+    produse = produseIncarcate;
+}
+
+void Depozit::salveazaProduseInFisier(const std::string& caleFisier) const {
+    std::filesystem::path cale(caleFisier);
+    if (cale.has_parent_path()) {
+        std::filesystem::create_directories(cale.parent_path());
+    }
+
+    std::ofstream fisier(caleFisier);
+    if (!fisier.is_open()) {
+        throw std::runtime_error("Fisierul de date nu poate fi deschis pentru scriere.");
+    }
+
+    fisier << "# id;nume;categorie;cantitate;pret;pragAlerta\n";
+    for (const Produs& produs : listaProduse()) {
+        valideazaTextPentruFisier(produs.getNume());
+        valideazaTextPentruFisier(produs.getCategorie());
+
+        fisier << produs.getId() << ';'
+               << produs.getNume() << ';'
+               << produs.getCategorie() << ';'
+               << produs.getCantitate() << ';'
+               << produs.getPret() << ';'
+               << produs.getPragAlerta() << '\n';
+    }
 }
 
 void Depozit::adaugaFurnizor(const Furnizor& furnizor) {

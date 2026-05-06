@@ -2,6 +2,7 @@
 #include "Tranzactie.h"
 
 #include <exception>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -9,6 +10,7 @@
 #include <vector>
 
 const int LATIME_UI = 72;
+const std::string FISIER_DATE = "data/produse.csv";
 
 void linie(char caracter = '=') {
     std::cout << std::string(LATIME_UI, caracter) << '\n';
@@ -36,6 +38,10 @@ void mesajInfo(const std::string& text) {
 
 void mesajEroare(const std::string& text) {
     std::cout << "\n[EROARE] " << text << '\n';
+}
+
+void salveazaCatalog(Depozit& depozit) {
+    depozit.salveazaProduseInFisier(FISIER_DATE);
 }
 
 void afiseazaProduse(const std::vector<Produs>& produse) {
@@ -102,7 +108,8 @@ void afiseazaMeniu() {
               << "|  3. Restock produs             |  9. Filtreaza dupa categorie     |\n"
               << "|  4. Vanzare produs             | 10. Sorteaza pret crescator      |\n"
               << "|  5. Afiseaza toate produsele   | 11. Sorteaza pret descrescator   |\n"
-              << "|  6. Raport produse sub prag    |  0. Iesire                       |\n";
+              << "|  6. Raport produse sub prag    | 12. Salveaza catalog             |\n"
+              << "| 13. Incarca catalog            |  0. Iesire                       |\n";
     linie('=');
     std::cout << "Alege optiunea: ";
 }
@@ -110,6 +117,17 @@ void afiseazaMeniu() {
 int main() {
     Depozit depozit;
     int optiune;
+
+    try {
+        if (std::filesystem::exists(FISIER_DATE)) {
+            depozit.incarcaProduseDinFisier(FISIER_DATE);
+            mesajInfo("Catalog incarcat din " + FISIER_DATE + ".");
+        } else {
+            mesajInfo("Nu exista fisier de date. Catalogul va fi creat la prima salvare.");
+        }
+    } catch (const std::exception& eroare) {
+        mesajEroare("Catalogul nu a putut fi incarcat: " + std::string(eroare.what()));
+    }
 
     do {
         afiseazaMeniu();
@@ -130,6 +148,7 @@ int main() {
                 double pret = citesteDouble("Pret: ");
                 int prag = citesteInt("Prag alerta: ");
                 depozit.adaugaProdus(Produs(id, nume, categorie, cantitate, pret, prag));
+                salveazaCatalog(depozit);
                 mesajSucces("Produs adaugat.");
                 break;
             }
@@ -137,6 +156,7 @@ int main() {
                 subtitlu("Elimina produs");
                 int id = citesteInt("ID produs: ");
                 depozit.eliminaProdus(id);
+                salveazaCatalog(depozit);
                 mesajSucces("Produs eliminat.");
                 break;
             }
@@ -146,6 +166,7 @@ int main() {
                 int cantitate = citesteInt("Cantitate adaugata: ");
                 Tranzactie<Intrare> tranzactie(id, cantitate, "restock");
                 depozit.restockProdus(tranzactie.getProdusId(), tranzactie.getCantitate());
+                salveazaCatalog(depozit);
                 mesajSucces("Stoc actualizat prin tranzactie de tip " + tranzactie.getTip() + ".");
                 break;
             }
@@ -155,6 +176,7 @@ int main() {
                 int cantitate = citesteInt("Cantitate vanduta: ");
                 Tranzactie<Iesire> tranzactie(id, cantitate, "vanzare");
                 depozit.vindeProdus(tranzactie.getProdusId(), tranzactie.getCantitate());
+                salveazaCatalog(depozit);
                 mesajSucces("Stoc actualizat prin tranzactie de tip " + tranzactie.getTip() + ".");
                 break;
             }
@@ -184,6 +206,14 @@ int main() {
                 break;
             case 11:
                 afiseazaProduse(depozit.sorteazaDupaPret(false));
+                break;
+            case 12:
+                salveazaCatalog(depozit);
+                mesajSucces("Catalog salvat in " + FISIER_DATE + ".");
+                break;
+            case 13:
+                depozit.incarcaProduseDinFisier(FISIER_DATE);
+                mesajSucces("Catalog incarcat din " + FISIER_DATE + ".");
                 break;
             case 0:
                 mesajInfo("Aplicatia se inchide.");
