@@ -1,0 +1,78 @@
+# Documentatie proiect
+
+## Titlu
+
+WarehouseInventoryMonitor - Sistem de Monitorizare a Stocurilor unui Depozit
+
+## Obiectiv
+
+Aplicatia are rolul de a gestiona produsele dintr-un depozit. Utilizatorul poate adauga produse, elimina produse, actualiza cantitati, afisa lista produselor si genera rapoarte pentru produsele care au stocul sub pragul de alerta.
+
+## Clase principale
+
+### Produs
+
+Clasa `Produs` reprezinta un produs din depozit.
+
+Atribute:
+
+- `id`
+- `nume`
+- `cantitate`
+- `pret`
+- `pragAlerta`
+
+Metode importante:
+
+- `esteSubPrag()` verifica daca produsul trebuie reaprovizionat;
+- `operator+=` adauga cantitate in stoc;
+- `operator-=` scade cantitate din stoc.
+
+### Depozit
+
+Clasa `Depozit` gestioneaza colectia de produse folosind `std::unordered_map<int, Produs>`, unde cheia este ID-ul produsului.
+
+Metode importante:
+
+- `adaugaProdus()`
+- `eliminaProdus()`
+- `restockProdus()`
+- `vindeProdus()`
+- `raportProduseSubPrag()`
+- `sugereazaReaprovizionare()`
+
+### Furnizor
+
+Clasa `Furnizor` reprezinta un furnizor asociat cu unul sau mai multe produse.
+
+Atribute:
+
+- `id`
+- `nume`
+- `contact`
+- `produseFurnizate`
+
+### Tranzactie<TP>
+
+Clasa template `Tranzactie<TP>` modeleaza o tranzactie de stoc. Tipul poate fi `Intrare` pentru restock sau `Iesire` pentru vanzare.
+
+## Concepte POO folosite
+
+- incapsulare: atributele claselor sunt private;
+- clase si obiecte: fiecare entitate importanta este reprezentata printr-o clasa;
+- supraincarcare operatori: `+=` si `-=` pentru actualizarea cantitatii;
+- exceptii: sunt aruncate exceptii pentru ID duplicat, produs lipsa, cantitati invalide si stoc insuficient;
+- STL: se folosesc `std::unordered_map` si `std::vector`;
+- template: `Tranzactie<TP>` permite reutilizarea logicii pentru intrari si iesiri.
+
+## Testare
+
+Testele sunt implementate in `tests/test_inventory.cpp` folosind `assert`. Ele verifica adaugarea produselor, ID-uri duplicate, operatorii de cantitate, exceptiile, raportul de produse sub prag, sortarea sugestiilor de reaprovizionare si clasa template pentru tranzactii.
+
+## Posibile imbunatatiri
+
+- salvarea produselor in fisiere;
+- cautare dupa nume;
+- interfata grafica;
+- rapoarte exportate in CSV;
+- istoric complet al tranzactiilor.
