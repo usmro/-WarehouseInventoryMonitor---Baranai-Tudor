@@ -13,8 +13,29 @@
 +----------------+
 | + esteSubPrag  |
 | + getStatusStoc|
+| + getTip       |
+| + getDetaliiSpecifice |
+| + clone        |
 | + operator+=   |
 | + operator-=   |
++----------------+
+
++--------------------+
+| ProdusElectronic   |
++--------------------+
+| - garantieLuni     |
++--------------------+
+| + getTip           |
+| + getDetaliiSpecifice |
++--------------------+
+
++----------------+
+| ProdusMobilier |
++----------------+
+| - material     |
++----------------+
+| + getTip       |
+| + getDetaliiSpecifice |
 +----------------+
 
 +-------------------------+
@@ -57,7 +78,9 @@
 | + getTip          |
 +-------------------+
 
-Depozit 1 ---- * Produs
+ProdusElectronic mosteneste Produs
+ProdusMobilier mosteneste Produs
+Depozit 1 ---- * Produs prin shared_ptr<Produs>
 Depozit 1 ---- * Furnizor
 Furnizor 1 ---- * Produs
 Tranzactie<TP> foloseste Produs prin produsId

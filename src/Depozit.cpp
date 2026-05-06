@@ -1,9 +1,12 @@
 #include "Depozit.h"
+#include "ProdusElectronic.h"
+#include "ProdusMobilier.h"
 
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 
@@ -22,10 +25,17 @@ void valideazaTextPentruFisier(const std::string& text) {
 }
 
 void Depozit::adaugaProdus(const Produs& produs) {
-    if (produse.find(produs.getId()) != produse.end()) {
+    adaugaProdus(produs.clone());
+}
+
+void Depozit::adaugaProdus(std::shared_ptr<Produs> produs) {
+    if (!produs) {
+        throw std::invalid_argument("Produsul nu poate fi null.");
+    }
+    if (produse.find(produs->getId()) != produse.end()) {
         throw std::runtime_error("Exista deja un produs cu acest ID.");
     }
-    produse.emplace(produs.getId(), produs);
+    produse.emplace(produs->getId(), produs);
 }
 
 void Depozit::eliminaProdus(int id) {
@@ -39,7 +49,7 @@ void Depozit::restockProdus(int id, int cantitate) {
     if (it == produse.end()) {
         throw std::out_of_range("Produsul nu a fost gasit.");
     }
-    it->second += cantitate;
+    *(it->second) += cantitate;
 }
 
 void Depozit::vindeProdus(int id, int cantitate) {
@@ -47,7 +57,7 @@ void Depozit::vindeProdus(int id, int cantitate) {
     if (it == produse.end()) {
         throw std::out_of_range("Produsul nu a fost gasit.");
     }
-    it->second -= cantitate;
+    *(it->second) -= cantitate;
 }
 
 const Produs& Depozit::cautaProdus(int id) const {
@@ -55,83 +65,83 @@ const Produs& Depozit::cautaProdus(int id) const {
     if (it == produse.end()) {
         throw std::out_of_range("Produsul nu a fost gasit.");
     }
-    return it->second;
+    return *(it->second);
 }
 
-std::vector<Produs> Depozit::listaProduse() const {
-    std::vector<Produs> rezultat;
+std::vector<std::shared_ptr<const Produs>> Depozit::listaProduse() const {
+    std::vector<std::shared_ptr<const Produs>> rezultat;
     for (const auto& pereche : produse) {
         rezultat.push_back(pereche.second);
     }
-    std::sort(rezultat.begin(), rezultat.end(), [](const Produs& a, const Produs& b) {
-        return a.getId() < b.getId();
+    std::sort(rezultat.begin(), rezultat.end(), [](const auto& a, const auto& b) {
+        return a->getId() < b->getId();
     });
     return rezultat;
 }
 
-std::vector<Produs> Depozit::cautaProduseDupaNume(const std::string& text) const {
-    std::vector<Produs> rezultat;
+std::vector<std::shared_ptr<const Produs>> Depozit::cautaProduseDupaNume(const std::string& text) const {
+    std::vector<std::shared_ptr<const Produs>> rezultat;
     std::string textCautat = textMic(text);
 
     for (const auto& pereche : produse) {
-        if (textMic(pereche.second.getNume()).find(textCautat) != std::string::npos) {
+        if (textMic(pereche.second->getNume()).find(textCautat) != std::string::npos) {
             rezultat.push_back(pereche.second);
         }
     }
 
-    std::sort(rezultat.begin(), rezultat.end(), [](const Produs& a, const Produs& b) {
-        return a.getNume() < b.getNume();
+    std::sort(rezultat.begin(), rezultat.end(), [](const auto& a, const auto& b) {
+        return a->getNume() < b->getNume();
     });
     return rezultat;
 }
 
-std::vector<Produs> Depozit::filtreazaDupaCategorie(const std::string& categorie) const {
-    std::vector<Produs> rezultat;
+std::vector<std::shared_ptr<const Produs>> Depozit::filtreazaDupaCategorie(const std::string& categorie) const {
+    std::vector<std::shared_ptr<const Produs>> rezultat;
     std::string categorieCautata = textMic(categorie);
 
     for (const auto& pereche : produse) {
-        if (textMic(pereche.second.getCategorie()) == categorieCautata) {
+        if (textMic(pereche.second->getCategorie()) == categorieCautata) {
             rezultat.push_back(pereche.second);
         }
     }
 
-    std::sort(rezultat.begin(), rezultat.end(), [](const Produs& a, const Produs& b) {
-        return a.getNume() < b.getNume();
+    std::sort(rezultat.begin(), rezultat.end(), [](const auto& a, const auto& b) {
+        return a->getNume() < b->getNume();
     });
     return rezultat;
 }
 
-std::vector<Produs> Depozit::sorteazaDupaPret(bool crescator) const {
-    std::vector<Produs> rezultat = listaProduse();
-    std::sort(rezultat.begin(), rezultat.end(), [crescator](const Produs& a, const Produs& b) {
-        if (a.getPret() == b.getPret()) {
-            return a.getId() < b.getId();
+std::vector<std::shared_ptr<const Produs>> Depozit::sorteazaDupaPret(bool crescator) const {
+    auto rezultat = listaProduse();
+    std::sort(rezultat.begin(), rezultat.end(), [crescator](const auto& a, const auto& b) {
+        if (a->getPret() == b->getPret()) {
+            return a->getId() < b->getId();
         }
-        return crescator ? a.getPret() < b.getPret() : a.getPret() > b.getPret();
+        return crescator ? a->getPret() < b->getPret() : a->getPret() > b->getPret();
     });
     return rezultat;
 }
 
-std::vector<Produs> Depozit::raportProduseSubPrag() const {
-    std::vector<Produs> rezultat;
+std::vector<std::shared_ptr<const Produs>> Depozit::raportProduseSubPrag() const {
+    std::vector<std::shared_ptr<const Produs>> rezultat;
     for (const auto& pereche : produse) {
-        if (pereche.second.esteSubPrag()) {
+        if (pereche.second->esteSubPrag()) {
             rezultat.push_back(pereche.second);
         }
     }
-    std::sort(rezultat.begin(), rezultat.end(), [](const Produs& a, const Produs& b) {
-        return a.getId() < b.getId();
+    std::sort(rezultat.begin(), rezultat.end(), [](const auto& a, const auto& b) {
+        return a->getId() < b->getId();
     });
     return rezultat;
 }
 
-std::vector<Produs> Depozit::sugereazaReaprovizionare() const {
-    std::vector<Produs> rezultat = raportProduseSubPrag();
-    std::sort(rezultat.begin(), rezultat.end(), [](const Produs& a, const Produs& b) {
-        if (a.getCantitate() == b.getCantitate()) {
-            return a.getId() < b.getId();
+std::vector<std::shared_ptr<const Produs>> Depozit::sugereazaReaprovizionare() const {
+    auto rezultat = raportProduseSubPrag();
+    std::sort(rezultat.begin(), rezultat.end(), [](const auto& a, const auto& b) {
+        if (a->getCantitate() == b->getCantitate()) {
+            return a->getId() < b->getId();
         }
-        return a.getCantitate() < b.getCantitate();
+        return a->getCantitate() < b->getCantitate();
     });
     return rezultat;
 }
@@ -142,7 +152,7 @@ void Depozit::incarcaProduseDinFisier(const std::string& caleFisier) {
         throw std::runtime_error("Fisierul de date nu poate fi deschis pentru citire.");
     }
 
-    std::unordered_map<int, Produs> produseIncarcate;
+    std::unordered_map<int, std::shared_ptr<Produs>> produseIncarcate;
     std::string linie;
     int numarLinie = 0;
 
@@ -159,8 +169,11 @@ void Depozit::incarcaProduseDinFisier(const std::string& caleFisier) {
         std::string cantitateText;
         std::string pretText;
         std::string pragText;
+        std::string tip;
+        std::string detaliuExtra;
 
-        if (!std::getline(flux, idText, ';') ||
+        if (!std::getline(flux, tip, ';') ||
+            !std::getline(flux, idText, ';') ||
             !std::getline(flux, nume, ';') ||
             !std::getline(flux, categorie, ';') ||
             !std::getline(flux, cantitateText, ';') ||
@@ -168,20 +181,28 @@ void Depozit::incarcaProduseDinFisier(const std::string& caleFisier) {
             !std::getline(flux, pragText, ';')) {
             throw std::runtime_error("Linie invalida in fisierul de date: " + std::to_string(numarLinie));
         }
+        std::getline(flux, detaliuExtra, ';');
 
-        Produs produs(
-            std::stoi(idText),
-            nume,
-            categorie,
-            std::stoi(cantitateText),
-            std::stod(pretText),
-            std::stoi(pragText)
-        );
+        int id = std::stoi(idText);
+        int cantitate = std::stoi(cantitateText);
+        double pret = std::stod(pretText);
+        int prag = std::stoi(pragText);
+        std::shared_ptr<Produs> produs;
 
-        if (produseIncarcate.find(produs.getId()) != produseIncarcate.end()) {
-            throw std::runtime_error("ID duplicat in fisierul de date: " + std::to_string(produs.getId()));
+        if (tip == "Electronic") {
+            produs = std::make_shared<ProdusElectronic>(id, nume, categorie, cantitate, pret, prag, std::stoi(detaliuExtra));
+        } else if (tip == "Mobilier") {
+            produs = std::make_shared<ProdusMobilier>(id, nume, categorie, cantitate, pret, prag, detaliuExtra);
+        } else if (tip == "Standard") {
+            produs = std::make_shared<Produs>(id, nume, categorie, cantitate, pret, prag);
+        } else {
+            throw std::runtime_error("Tip necunoscut in fisierul de date: " + tip);
         }
-        produseIncarcate.emplace(produs.getId(), produs);
+
+        if (produseIncarcate.find(produs->getId()) != produseIncarcate.end()) {
+            throw std::runtime_error("ID duplicat in fisierul de date: " + std::to_string(produs->getId()));
+        }
+        produseIncarcate.emplace(produs->getId(), produs);
     }
 
     produse = produseIncarcate;
@@ -198,17 +219,20 @@ void Depozit::salveazaProduseInFisier(const std::string& caleFisier) const {
         throw std::runtime_error("Fisierul de date nu poate fi deschis pentru scriere.");
     }
 
-    fisier << "# id;nume;categorie;cantitate;pret;pragAlerta\n";
-    for (const Produs& produs : listaProduse()) {
-        valideazaTextPentruFisier(produs.getNume());
-        valideazaTextPentruFisier(produs.getCategorie());
+    fisier << "# tip;id;nume;categorie;cantitate;pret;pragAlerta;detaliuExtra\n";
+    for (const auto& produs : listaProduse()) {
+        valideazaTextPentruFisier(produs->getNume());
+        valideazaTextPentruFisier(produs->getCategorie());
+        valideazaTextPentruFisier(produs->getDetaliuPersistenta());
 
-        fisier << produs.getId() << ';'
-               << produs.getNume() << ';'
-               << produs.getCategorie() << ';'
-               << produs.getCantitate() << ';'
-               << produs.getPret() << ';'
-               << produs.getPragAlerta() << '\n';
+        fisier << produs->getTip() << ';'
+               << produs->getId() << ';'
+               << produs->getNume() << ';'
+               << produs->getCategorie() << ';'
+               << produs->getCantitate() << ';'
+               << produs->getPret() << ';'
+               << produs->getPragAlerta() << ';'
+               << produs->getDetaliuPersistenta() << '\n';
     }
 }
 

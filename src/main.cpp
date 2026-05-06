@@ -1,4 +1,6 @@
 #include "Depozit.h"
+#include "ProdusElectronic.h"
+#include "ProdusMobilier.h"
 #include "Tranzactie.h"
 
 #include <exception>
@@ -6,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -40,30 +43,42 @@ void mesajEroare(const std::string& text) {
     std::cout << "\n[EROARE] " << text << '\n';
 }
 
+std::string textInColoana(const std::string& text, std::size_t latime) {
+    if (text.size() <= latime) {
+        return text;
+    }
+    if (latime <= 3) {
+        return text.substr(0, latime);
+    }
+    return text.substr(0, latime - 3) + "...";
+}
+
 void salveazaCatalog(Depozit& depozit) {
     depozit.salveazaProduseInFisier(FISIER_DATE);
 }
 
-void afiseazaProduse(const std::vector<Produs>& produse) {
+void afiseazaProduse(const std::vector<std::shared_ptr<const Produs>>& produse) {
     if (produse.empty()) {
         mesajInfo("Nu exista produse de afisat.");
         return;
     }
 
     subtitlu("Catalog produse");
-    for (const Produs& produs : produse) {
+    for (const auto& produs : produse) {
         std::cout << "+----------------------------------------------------------------------+\n"
-                  << "| #" << std::left << std::setw(5) << produs.getId()
-                  << std::setw(62) << produs.getNume() << "|\n"
+                  << "| #" << std::left << std::setw(5) << produs->getId()
+                  << std::setw(62) << textInColoana(produs->getNume(), 62) << "|\n"
                   << "+----------------------------------------------------------------------+\n"
-                  << "| Categorie    : " << std::setw(53) << produs.getCategorie() << "|\n"
+                  << "| Tip          : " << std::setw(53) << textInColoana(produs->getTip(), 53) << "|\n"
+                  << "| Categorie    : " << std::setw(53) << textInColoana(produs->getCategorie(), 53) << "|\n"
                   << "| Pret         : " << std::right << std::setw(10) << std::fixed << std::setprecision(2)
-                  << produs.getPret() << " lei" << std::left << std::setw(39) << "" << "|\n"
-                  << "| Stoc         : " << std::right << std::setw(10) << produs.getCantitate()
+                  << produs->getPret() << " lei" << std::left << std::setw(39) << "" << "|\n"
+                  << "| Stoc         : " << std::right << std::setw(10) << produs->getCantitate()
                   << " bucati" << std::left << std::setw(36) << "" << "|\n"
-                  << "| Prag alerta  : " << std::right << std::setw(10) << produs.getPragAlerta()
+                  << "| Prag alerta  : " << std::right << std::setw(10) << produs->getPragAlerta()
                   << std::left << std::setw(43) << "" << "|\n"
-                  << "| Status       : " << std::setw(53) << produs.getStatusStoc() << "|\n"
+                  << "| Status       : " << std::setw(53) << textInColoana(produs->getStatusStoc(), 53) << "|\n"
+                  << "| Detalii      : " << std::setw(53) << textInColoana(produs->getDetaliiSpecifice(), 53) << "|\n"
                   << "+----------------------------------------------------------------------+\n";
     }
 }
@@ -141,13 +156,28 @@ int main() {
             switch (optiune) {
             case 1: {
                 subtitlu("Adauga produs");
+                std::cout << "  Tip produs: 1=Standard, 2=Electronic, 3=Mobilier\n";
+                int tipProdus = citesteInt("Tip: ");
                 int id = citesteInt("ID: ");
                 std::string nume = citesteText("Nume: ");
                 std::string categorie = citesteText("Categorie: ");
                 int cantitate = citesteInt("Cantitate: ");
                 double pret = citesteDouble("Pret: ");
                 int prag = citesteInt("Prag alerta: ");
-                depozit.adaugaProdus(Produs(id, nume, categorie, cantitate, pret, prag));
+
+                if (tipProdus == 2) {
+                    int garantie = citesteInt("Garantie luni: ");
+                    depozit.adaugaProdus(std::make_shared<ProdusElectronic>(id, nume, categorie, cantitate, pret, prag, garantie));
+                } else if (tipProdus == 3) {
+                    std::string material = citesteText("Material: ");
+                    depozit.adaugaProdus(std::make_shared<ProdusMobilier>(id, nume, categorie, cantitate, pret, prag, material));
+                } else if (tipProdus == 1) {
+                    depozit.adaugaProdus(std::make_shared<Produs>(id, nume, categorie, cantitate, pret, prag));
+                } else {
+                    mesajEroare("Tip de produs invalid.");
+                    break;
+                }
+
                 salveazaCatalog(depozit);
                 mesajSucces("Produs adaugat.");
                 break;

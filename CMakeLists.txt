@@ -8,6 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(inventory_core
     src/Produs.cpp
+    src/ProdusElectronic.cpp
+    src/ProdusMobilier.cpp
     src/Furnizor.cpp
     src/Depozit.cpp
 )
