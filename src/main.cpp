@@ -5,24 +5,61 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <string>
 #include <vector>
+
+const int LATIME_UI = 72;
+
+void linie(char caracter = '=') {
+    std::cout << std::string(LATIME_UI, caracter) << '\n';
+}
+
+void titlu(const std::string& text) {
+    std::cout << '\n';
+    linie('=');
+    std::cout << "| " << std::left << std::setw(LATIME_UI - 4) << text << " |\n";
+    linie('=');
+}
+
+void subtitlu(const std::string& text) {
+    std::cout << '\n' << text << '\n';
+    linie('-');
+}
+
+void mesajSucces(const std::string& text) {
+    std::cout << "\n[OK] " << text << '\n';
+}
+
+void mesajInfo(const std::string& text) {
+    std::cout << "\n[INFO] " << text << '\n';
+}
+
+void mesajEroare(const std::string& text) {
+    std::cout << "\n[EROARE] " << text << '\n';
+}
 
 void afiseazaProduse(const std::vector<Produs>& produse) {
     if (produse.empty()) {
-        std::cout << "Nu exista produse de afisat.\n";
+        mesajInfo("Nu exista produse de afisat.");
         return;
     }
 
+    subtitlu("Catalog produse");
     for (const Produs& produs : produse) {
-        std::cout << "\n----------------------------------------\n"
-                  << "[" << produs.getId() << "] " << produs.getNume() << '\n'
-                  << "Categorie: " << produs.getCategorie() << '\n'
-                  << "Pret: " << std::fixed << std::setprecision(2) << produs.getPret() << " lei\n"
-                  << "Stoc: " << produs.getCantitate() << " bucati\n"
-                  << "Prag alerta: " << produs.getPragAlerta() << '\n'
-                  << "Status: " << produs.getStatusStoc() << '\n';
+        std::cout << "+----------------------------------------------------------------------+\n"
+                  << "| #" << std::left << std::setw(5) << produs.getId()
+                  << std::setw(62) << produs.getNume() << "|\n"
+                  << "+----------------------------------------------------------------------+\n"
+                  << "| Categorie    : " << std::setw(53) << produs.getCategorie() << "|\n"
+                  << "| Pret         : " << std::right << std::setw(10) << std::fixed << std::setprecision(2)
+                  << produs.getPret() << " lei" << std::left << std::setw(39) << "" << "|\n"
+                  << "| Stoc         : " << std::right << std::setw(10) << produs.getCantitate()
+                  << " bucati" << std::left << std::setw(36) << "" << "|\n"
+                  << "| Prag alerta  : " << std::right << std::setw(10) << produs.getPragAlerta()
+                  << std::left << std::setw(43) << "" << "|\n"
+                  << "| Status       : " << std::setw(53) << produs.getStatusStoc() << "|\n"
+                  << "+----------------------------------------------------------------------+\n";
     }
-    std::cout << "----------------------------------------\n";
 }
 
 void curataInput() {
@@ -32,9 +69,9 @@ void curataInput() {
 
 int citesteInt(const std::string& mesaj) {
     int valoare;
-    std::cout << mesaj;
+    std::cout << "  " << mesaj;
     while (!(std::cin >> valoare)) {
-        std::cout << "Valoare invalida. Incearca din nou: ";
+        std::cout << "  Valoare invalida. Incearca din nou: ";
         curataInput();
     }
     return valoare;
@@ -42,9 +79,9 @@ int citesteInt(const std::string& mesaj) {
 
 double citesteDouble(const std::string& mesaj) {
     double valoare;
-    std::cout << mesaj;
+    std::cout << "  " << mesaj;
     while (!(std::cin >> valoare)) {
-        std::cout << "Valoare invalida. Incearca din nou: ";
+        std::cout << "  Valoare invalida. Incearca din nou: ";
         curataInput();
     }
     return valoare;
@@ -52,27 +89,22 @@ double citesteDouble(const std::string& mesaj) {
 
 std::string citesteText(const std::string& mesaj) {
     std::string text;
-    std::cout << mesaj;
+    std::cout << "  " << mesaj;
     std::cin >> std::ws;
     std::getline(std::cin, text);
     return text;
 }
 
 void afiseazaMeniu() {
-    std::cout << "\n=== Warehouse Inventory Monitor ===\n"
-              << "1. Adauga produs\n"
-              << "2. Elimina produs\n"
-              << "3. Restock produs\n"
-              << "4. Vanzare produs\n"
-              << "5. Afiseaza toate produsele\n"
-              << "6. Raport produse sub prag\n"
-              << "7. Sugestii reaprovizionare\n"
-              << "8. Cauta produs dupa nume\n"
-              << "9. Filtreaza dupa categorie\n"
-              << "10. Sorteaza dupa pret crescator\n"
-              << "11. Sorteaza dupa pret descrescator\n"
-              << "0. Iesire\n"
-              << "Alege optiunea: ";
+    titlu("Warehouse Inventory Monitor");
+    std::cout << "|  1. Adauga produs              |  7. Sugestii reaprovizionare     |\n"
+              << "|  2. Elimina produs             |  8. Cauta produs dupa nume       |\n"
+              << "|  3. Restock produs             |  9. Filtreaza dupa categorie     |\n"
+              << "|  4. Vanzare produs             | 10. Sorteaza pret crescator      |\n"
+              << "|  5. Afiseaza toate produsele   | 11. Sorteaza pret descrescator   |\n"
+              << "|  6. Raport produse sub prag    |  0. Iesire                       |\n";
+    linie('=');
+    std::cout << "Alege optiunea: ";
 }
 
 int main() {
@@ -82,7 +114,7 @@ int main() {
     do {
         afiseazaMeniu();
         if (!(std::cin >> optiune)) {
-            std::cout << "Optiune invalida.\n";
+            mesajEroare("Optiune invalida.");
             curataInput();
             continue;
         }
@@ -90,6 +122,7 @@ int main() {
         try {
             switch (optiune) {
             case 1: {
+                subtitlu("Adauga produs");
                 int id = citesteInt("ID: ");
                 std::string nume = citesteText("Nume: ");
                 std::string categorie = citesteText("Categorie: ");
@@ -97,29 +130,32 @@ int main() {
                 double pret = citesteDouble("Pret: ");
                 int prag = citesteInt("Prag alerta: ");
                 depozit.adaugaProdus(Produs(id, nume, categorie, cantitate, pret, prag));
-                std::cout << "Produs adaugat.\n";
+                mesajSucces("Produs adaugat.");
                 break;
             }
             case 2: {
+                subtitlu("Elimina produs");
                 int id = citesteInt("ID produs: ");
                 depozit.eliminaProdus(id);
-                std::cout << "Produs eliminat.\n";
+                mesajSucces("Produs eliminat.");
                 break;
             }
             case 3: {
+                subtitlu("Restock produs");
                 int id = citesteInt("ID produs: ");
                 int cantitate = citesteInt("Cantitate adaugata: ");
                 Tranzactie<Intrare> tranzactie(id, cantitate, "restock");
                 depozit.restockProdus(tranzactie.getProdusId(), tranzactie.getCantitate());
-                std::cout << "Stoc actualizat prin tranzactie de tip " << tranzactie.getTip() << ".\n";
+                mesajSucces("Stoc actualizat prin tranzactie de tip " + tranzactie.getTip() + ".");
                 break;
             }
             case 4: {
+                subtitlu("Vanzare produs");
                 int id = citesteInt("ID produs: ");
                 int cantitate = citesteInt("Cantitate vanduta: ");
                 Tranzactie<Iesire> tranzactie(id, cantitate, "vanzare");
                 depozit.vindeProdus(tranzactie.getProdusId(), tranzactie.getCantitate());
-                std::cout << "Stoc actualizat prin tranzactie de tip " << tranzactie.getTip() << ".\n";
+                mesajSucces("Stoc actualizat prin tranzactie de tip " + tranzactie.getTip() + ".");
                 break;
             }
             case 5:
@@ -132,11 +168,13 @@ int main() {
                 afiseazaProduse(depozit.sugereazaReaprovizionare());
                 break;
             case 8: {
+                subtitlu("Cauta produs");
                 std::string text = citesteText("Text cautat in numele produsului: ");
                 afiseazaProduse(depozit.cautaProduseDupaNume(text));
                 break;
             }
             case 9: {
+                subtitlu("Filtreaza produse");
                 std::string categorie = citesteText("Categorie: ");
                 afiseazaProduse(depozit.filtreazaDupaCategorie(categorie));
                 break;
@@ -148,14 +186,14 @@ int main() {
                 afiseazaProduse(depozit.sorteazaDupaPret(false));
                 break;
             case 0:
-                std::cout << "Aplicatia se inchide.\n";
+                mesajInfo("Aplicatia se inchide.");
                 break;
             default:
-                std::cout << "Optiune inexistenta.\n";
+                mesajEroare("Optiune inexistenta.");
                 break;
             }
         } catch (const std::exception& eroare) {
-            std::cout << "Eroare: " << eroare.what() << '\n';
+            mesajEroare(eroare.what());
         }
     } while (optiune != 0);
 

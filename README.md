@@ -100,12 +100,15 @@ ctest --test-dir build
 Products are shown in a catalog format:
 
 ```text
-[101] Laptop Lenovo
-Categorie: Electronice
-Pret: 2499.99 lei
-Stoc: 12 bucati
-Prag alerta: 3
-Status: In stoc
++----------------------------------------------------------------------+
+| #101  Laptop Lenovo                                                  |
++----------------------------------------------------------------------+
+| Categorie    : Electronice                                           |
+| Pret         :    2499.99 lei                                        |
+| Stoc         :         12 bucati                                     |
+| Prag alerta  :          3                                            |
+| Status       : In stoc                                               |
++----------------------------------------------------------------------+
 ```
 
 Possible stock statuses:
