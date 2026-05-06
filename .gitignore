@@ -1,0 +1,23 @@
+# Build output
+build/
+bin/
+obj/
+out/
+*.exe
+*.o
+*.obj
+
+# IDE files
+.vscode/
+.idea/
+*.user
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and test output
+*.log
+test_results/
+coverage/
