@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
-SRC = src/Produs.cpp src/Furnizor.cpp src/Depozit.cpp
+SRC = src/Produs.cpp src/ProdusElectronic.cpp src/ProdusMobilier.cpp src/Furnizor.cpp src/Depozit.cpp
 APP = build/warehouse_inventory
 TEST_APP = build/test_inventory
 

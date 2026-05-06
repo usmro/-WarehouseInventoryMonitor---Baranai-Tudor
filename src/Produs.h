@@ -1,6 +1,7 @@
 #ifndef PRODUS_H
 #define PRODUS_H
 
+#include <memory>
 #include <string>
 
 class Produs {
@@ -31,9 +32,14 @@ public:
 
     bool esteSubPrag() const;
     std::string getStatusStoc() const;
+    virtual std::string getTip() const;
+    virtual std::string getDetaliiSpecifice() const;
+    virtual std::string getDetaliuPersistenta() const;
+    virtual std::shared_ptr<Produs> clone() const;
 
     Produs& operator+=(int cantitateAdaugata);
     Produs& operator-=(int cantitateScazuta);
+    virtual ~Produs() = default;
 };
 
 #endif

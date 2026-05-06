@@ -1,7 +1,7 @@
-# id;nume;categorie;cantitate;pret;pragAlerta
-101;Laptop Lenovo IdeaPad;Electronice;12;2499.99;3
-102;Mouse wireless Logitech;Electronice;35;89.99;10
-201;Dulap alb cu doua usi;Mobilier;4;699.50;2
-202;Birou compact;Mobilier;7;449.99;3
-301;Frigider Arctic;Electrocasnice;2;1599.00;3
-401;Bec LED economic;Accesorii;60;14.99;20
+# tip;id;nume;categorie;cantitate;pret;pragAlerta;detaliuExtra
+Electronic;101;Laptop Lenovo IdeaPad;Laptopuri;12;2499.99;3;24
+Electronic;102;Mouse wireless Logitech;Periferice;35;89.99;10;12
+Mobilier;201;Dulap alb cu doua usi;Dulapuri;4;699.50;2;PAL melaminat
+Mobilier;202;Birou compact;Birouri;7;449.99;3;MDF
+Electronic;301;Frigider Arctic;Electrocasnice;2;1599.00;3;36
+Standard;401;Bec LED economic;Accesorii;60;14.99;20;

@@ -1,5 +1,6 @@
 #include "Produs.h"
 
+#include <memory>
 #include <stdexcept>
 
 Produs::Produs() : id(0), nume("Produs necunoscut"), categorie("General"), cantitate(0), pret(0.0), pragAlerta(0) {
@@ -96,6 +97,22 @@ std::string Produs::getStatusStoc() const {
         return "Stoc redus";
     }
     return "In stoc";
+}
+
+std::string Produs::getTip() const {
+    return "Standard";
+}
+
+std::string Produs::getDetaliiSpecifice() const {
+    return "Produs general de depozit";
+}
+
+std::string Produs::getDetaliuPersistenta() const {
+    return "";
+}
+
+std::shared_ptr<Produs> Produs::clone() const {
+    return std::make_shared<Produs>(*this);
 }
 
 Produs& Produs::operator+=(int cantitateAdaugata) {

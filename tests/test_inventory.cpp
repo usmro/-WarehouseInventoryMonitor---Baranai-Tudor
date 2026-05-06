@@ -1,8 +1,11 @@
 #include "../src/Depozit.h"
+#include "../src/ProdusElectronic.h"
+#include "../src/ProdusMobilier.h"
 #include "../src/Tranzactie.h"
 
 #include <cassert>
 #include <cstdio>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
@@ -63,16 +66,29 @@ void testStatusStoc() {
     assert(indisponibil.getStatusStoc() == "Indisponibil");
 }
 
+void testMostenireSiPolimorfism() {
+    Depozit depozit;
+    depozit.adaugaProdus(std::make_shared<ProdusElectronic>(1, "Laptop Lenovo", "Laptopuri", 4, 2500.0, 2, 24));
+    depozit.adaugaProdus(std::make_shared<ProdusMobilier>(2, "Dulap alb", "Dulapuri", 2, 700.0, 1, "PAL"));
+
+    std::vector<std::shared_ptr<const Produs>> produse = depozit.listaProduse();
+    assert(produse.size() == 2);
+    assert(produse[0]->getTip() == "Electronic");
+    assert(produse[0]->getDetaliiSpecifice() == "Garantie: 24 luni");
+    assert(produse[1]->getTip() == "Mobilier");
+    assert(produse[1]->getDetaliiSpecifice() == "Material: PAL");
+}
+
 void testRaportSubPrag() {
     Depozit depozit;
     depozit.adaugaProdus(Produs(1, "Laptop", 5, 2500.0, 2));
     depozit.adaugaProdus(Produs(2, "Mouse", 3, 50.0, 10));
     depozit.adaugaProdus(Produs(3, "Monitor", 1, 800.0, 5));
 
-    std::vector<Produs> raport = depozit.raportProduseSubPrag();
+    std::vector<std::shared_ptr<const Produs>> raport = depozit.raportProduseSubPrag();
     assert(raport.size() == 2);
-    assert(raport[0].getId() == 2);
-    assert(raport[1].getId() == 3);
+    assert(raport[0]->getId() == 2);
+    assert(raport[1]->getId() == 3);
 }
 
 void testCautareFiltrareSortareCatalog() {
@@ -81,17 +97,17 @@ void testCautareFiltrareSortareCatalog() {
     depozit.adaugaProdus(Produs(2, "Dulap alb", "Mobilier", 3, 700.0, 1));
     depozit.adaugaProdus(Produs(3, "Mouse wireless", "Electronice", 20, 80.0, 5));
 
-    std::vector<Produs> cautare = depozit.cautaProduseDupaNume("lenovo");
+    std::vector<std::shared_ptr<const Produs>> cautare = depozit.cautaProduseDupaNume("lenovo");
     assert(cautare.size() == 1);
-    assert(cautare[0].getId() == 1);
+    assert(cautare[0]->getId() == 1);
 
-    std::vector<Produs> electronice = depozit.filtreazaDupaCategorie("electronice");
+    std::vector<std::shared_ptr<const Produs>> electronice = depozit.filtreazaDupaCategorie("electronice");
     assert(electronice.size() == 2);
 
-    std::vector<Produs> sortate = depozit.sorteazaDupaPret(true);
-    assert(sortate[0].getId() == 3);
-    assert(sortate[1].getId() == 2);
-    assert(sortate[2].getId() == 1);
+    std::vector<std::shared_ptr<const Produs>> sortate = depozit.sorteazaDupaPret(true);
+    assert(sortate[0]->getId() == 3);
+    assert(sortate[1]->getId() == 2);
+    assert(sortate[2]->getId() == 1);
 }
 
 void testSugestiiSortate() {
@@ -100,11 +116,11 @@ void testSugestiiSortate() {
     depozit.adaugaProdus(Produs(2, "Mouse", 1, 50.0, 10));
     depozit.adaugaProdus(Produs(3, "Monitor", 3, 800.0, 5));
 
-    std::vector<Produs> sugestii = depozit.sugereazaReaprovizionare();
+    std::vector<std::shared_ptr<const Produs>> sugestii = depozit.sugereazaReaprovizionare();
     assert(sugestii.size() == 3);
-    assert(sugestii[0].getId() == 2);
-    assert(sugestii[1].getId() == 3);
-    assert(sugestii[2].getId() == 1);
+    assert(sugestii[0]->getId() == 2);
+    assert(sugestii[1]->getId() == 3);
+    assert(sugestii[2]->getId() == 1);
 }
 
 void testTranzactieTemplate() {
@@ -132,19 +148,22 @@ void testPersistentaProduse() {
     const char* caleFisier = "build/test_produse.csv";
 
     Depozit depozit;
-    depozit.adaugaProdus(Produs(10, "Raft metalic", "Depozitare", 6, 350.0, 2));
-    depozit.adaugaProdus(Produs(11, "Scanner cod bare", "Electronice", 3, 420.0, 1));
+    depozit.adaugaProdus(std::make_shared<ProdusMobilier>(10, "Raft metalic", "Depozitare", 6, 350.0, 2, "Otel"));
+    depozit.adaugaProdus(std::make_shared<ProdusElectronic>(11, "Scanner cod bare", "Electronice", 3, 420.0, 1, 24));
     depozit.salveazaProduseInFisier(caleFisier);
 
     Depozit depozitIncarcat;
     depozitIncarcat.incarcaProduseDinFisier(caleFisier);
 
-    std::vector<Produs> produse = depozitIncarcat.listaProduse();
+    std::vector<std::shared_ptr<const Produs>> produse = depozitIncarcat.listaProduse();
     assert(produse.size() == 2);
-    assert(produse[0].getId() == 10);
-    assert(produse[0].getCategorie() == "Depozitare");
-    assert(produse[1].getId() == 11);
-    assert(produse[1].getNume() == "Scanner cod bare");
+    assert(produse[0]->getId() == 10);
+    assert(produse[0]->getCategorie() == "Depozitare");
+    assert(produse[0]->getTip() == "Mobilier");
+    assert(produse[0]->getDetaliiSpecifice() == "Material: Otel");
+    assert(produse[1]->getId() == 11);
+    assert(produse[1]->getNume() == "Scanner cod bare");
+    assert(produse[1]->getTip() == "Electronic");
 
     std::remove(caleFisier);
 }
@@ -155,6 +174,7 @@ int main() {
     testOperatoriCantitate();
     testStocInsuficient();
     testStatusStoc();
+    testMostenireSiPolimorfism();
     testRaportSubPrag();
     testCautareFiltrareSortareCatalog();
     testSugestiiSortate();
