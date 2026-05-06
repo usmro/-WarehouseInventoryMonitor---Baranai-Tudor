@@ -80,7 +80,7 @@ void testCautareFiltrareSortareCatalog() {
     depozit.adaugaProdus(Produs(2, "Dulap alb", "Mobilier", 3, 700.0, 1));
     depozit.adaugaProdus(Produs(3, "Mouse wireless", "Electronice", 20, 80.0, 5));
 
-    std::vector<Produs> cautare = depozit.cautaProduseDupaNume("lap");
+    std::vector<Produs> cautare = depozit.cautaProduseDupaNume("lenovo");
     assert(cautare.size() == 1);
     assert(cautare[0].getId() == 1);
 
