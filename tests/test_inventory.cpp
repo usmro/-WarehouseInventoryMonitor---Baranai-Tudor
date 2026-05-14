@@ -1,4 +1,7 @@
 #include "../src/Depozit.h"
+#include "../src/Furnizor.h"
+#include "../src/IstoricTranzactii.h"
+#include "../src/MiscareStoc.h"
 #include "../src/ProdusElectronic.h"
 #include "../src/ProdusMobilier.h"
 #include "../src/Tranzactie.h"
@@ -7,6 +10,7 @@
 #include <cstdio>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 void testAdaugareProdus() {
@@ -168,6 +172,174 @@ void testPersistentaProduse() {
     std::remove(caleFisier);
 }
 
+void testIstoricInregistreazaRestockSiVanzare() {
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
+
+    depozit.restockProdus(1, 3, "comanda noua");
+    depozit.vindeProdus(1, 4, "client local");
+
+    const IstoricTranzactii& istoric = depozit.getIstoric();
+    assert(istoric.numarMiscari() == 2);
+
+    auto miscari = istoric.toateMiscarile();
+    assert(miscari[0]->getTip() == "Intrare");
+    assert(miscari[0]->getCantitate() == 3);
+    assert(miscari[0]->getDeltaStoc() == 3);
+    assert(miscari[0]->getObservatii() == "comanda noua");
+
+    assert(miscari[1]->getTip() == "Iesire");
+    assert(miscari[1]->getDeltaStoc() == -4);
+
+    assert(depozit.cautaProdus(1).getCantitate() == 4);
+}
+
+void testIstoricPolimorfism() {
+    IstoricTranzactii istoric;
+    istoric.inregistreazaIntrare(7, 10, "");
+    istoric.inregistreazaIesire(7, 2, "");
+
+    auto miscari = istoric.toateMiscarile();
+    assert(miscari.size() == 2);
+
+    int suma = 0;
+    for (const auto& miscare : miscari) {
+        suma += miscare->getDeltaStoc();
+    }
+    assert(suma == 8);
+
+    auto copie = miscari[0]->clone();
+    assert(copie->getTip() == "Intrare");
+    assert(copie->getProdusId() == 7);
+}
+
+void testIstoricFiltrarePerProdus() {
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 10, 2500.0, 2));
+    depozit.adaugaProdus(Produs(2, "Mouse", "Periferice", 20, 80.0, 5));
+
+    depozit.restockProdus(1, 5);
+    depozit.restockProdus(2, 10);
+    depozit.vindeProdus(1, 3);
+
+    auto miscariProdus1 = depozit.getIstoric().miscariPentruProdus(1);
+    assert(miscariProdus1.size() == 2);
+    assert(miscariProdus1[0]->getTip() == "Intrare");
+    assert(miscariProdus1[1]->getTip() == "Iesire");
+
+    auto ultimele = depozit.getIstoric().ultimele(2);
+    assert(ultimele.size() == 2);
+    assert(ultimele[1]->getProdusId() == 1);
+}
+
+void testIstoricPersistenta() {
+    const char* caleFisier = "build/test_istoric.csv";
+
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
+    depozit.restockProdus(1, 4, "comanda lunara");
+    depozit.vindeProdus(1, 2, "vanzare online");
+    depozit.salveazaIstoricInFisier(caleFisier);
+
+    Depozit incarcat;
+    incarcat.incarcaIstoricDinFisier(caleFisier);
+
+    auto miscari = incarcat.getIstoric().toateMiscarile();
+    assert(miscari.size() == 2);
+    assert(miscari[0]->getTip() == "Intrare");
+    assert(miscari[0]->getCantitate() == 4);
+    assert(miscari[0]->getObservatii() == "comanda lunara");
+    assert(miscari[1]->getTip() == "Iesire");
+    assert(miscari[1]->getCantitate() == 2);
+
+    std::remove(caleFisier);
+}
+
+void testFurnizorAsociereSiCautare() {
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
+    depozit.adaugaProdus(Produs(2, "Mouse", "Periferice", 20, 80.0, 5));
+    depozit.adaugaFurnizor(Furnizor(10, "ACME SRL", "acme@example.ro"));
+    depozit.asociazaProdusCuFurnizor(10, 1);
+    depozit.asociazaProdusCuFurnizor(10, 2);
+
+    auto produseFurnizor = depozit.produsePentruFurnizor(10);
+    assert(produseFurnizor.size() == 2);
+
+    const Furnizor& f = depozit.cautaFurnizor(10);
+    assert(f.furnizeazaProdusul(1));
+    assert(f.furnizeazaProdusul(2));
+}
+
+void testEliminareProdusScoateFurnizor() {
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
+    depozit.adaugaFurnizor(Furnizor(10, "ACME", "acme@example.ro"));
+    depozit.asociazaProdusCuFurnizor(10, 1);
+
+    depozit.eliminaProdus(1);
+
+    assert(!depozit.cautaFurnizor(10).furnizeazaProdusul(1));
+}
+
+void testReaprovizionarePeFurnizor() {
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 1, 2500.0, 5));
+    depozit.adaugaProdus(Produs(2, "Mouse", "Periferice", 20, 80.0, 5));
+    depozit.adaugaProdus(Produs(3, "Tastatura", "Periferice", 0, 120.0, 4));
+
+    depozit.adaugaFurnizor(Furnizor(10, "ACME", "acme@example.ro"));
+    depozit.adaugaFurnizor(Furnizor(20, "TechDist", "tech@example.ro"));
+
+    depozit.asociazaProdusCuFurnizor(10, 1);
+    depozit.asociazaProdusCuFurnizor(10, 2);
+    depozit.asociazaProdusCuFurnizor(20, 3);
+
+    auto sugestii = depozit.sugestiiReaprovizionarePeFurnizor();
+    assert(sugestii.size() == 2);
+
+    assert(sugestii[0].first.getId() == 10);
+    assert(sugestii[0].second.size() == 1);
+    assert(sugestii[0].second[0]->getId() == 1);
+
+    assert(sugestii[1].first.getId() == 20);
+    assert(sugestii[1].second.size() == 1);
+    assert(sugestii[1].second[0]->getId() == 3);
+}
+
+void testFurnizorPersistenta() {
+    const char* caleFisier = "build/test_furnizori.csv";
+
+    Depozit depozit;
+    depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
+    depozit.adaugaProdus(Produs(2, "Mouse", "Periferice", 20, 80.0, 5));
+    depozit.adaugaFurnizor(Furnizor(10, "ACME SRL", "acme@example.ro"));
+    depozit.adaugaFurnizor(Furnizor(20, "TechDist", ""));
+    depozit.asociazaProdusCuFurnizor(10, 1);
+    depozit.asociazaProdusCuFurnizor(10, 2);
+
+    depozit.salveazaFurnizoriInFisier(caleFisier);
+
+    Depozit incarcat;
+    incarcat.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
+    incarcat.adaugaProdus(Produs(2, "Mouse", "Periferice", 20, 80.0, 5));
+    incarcat.incarcaFurnizoriDinFisier(caleFisier);
+
+    auto furnizori = incarcat.listaFurnizori();
+    assert(furnizori.size() == 2);
+    assert(furnizori[0].getId() == 10);
+    assert(furnizori[0].getNume() == "ACME SRL");
+    assert(furnizori[0].getProduseFurnizate().size() == 2);
+    assert(furnizori[1].getId() == 20);
+    assert(furnizori[1].getProduseFurnizate().empty());
+
+    auto produseAcme = incarcat.produsePentruFurnizor(10);
+    assert(produseAcme.size() == 2);
+    assert(produseAcme[0]->getId() == 1);
+
+    std::remove(caleFisier);
+}
+
 int main() {
     testAdaugareProdus();
     testIdDuplicat();
@@ -181,6 +353,14 @@ int main() {
     testTranzactieTemplate();
     testTranzactieInvalida();
     testPersistentaProduse();
+    testIstoricInregistreazaRestockSiVanzare();
+    testIstoricPolimorfism();
+    testIstoricFiltrarePerProdus();
+    testIstoricPersistenta();
+    testFurnizorAsociereSiCautare();
+    testEliminareProdusScoateFurnizor();
+    testReaprovizionarePeFurnizor();
+    testFurnizorPersistenta();
 
     return 0;
 }
