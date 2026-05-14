@@ -40,3 +40,20 @@ void Furnizor::adaugaProdusFurnizat(int produsId) {
         produseFurnizate.push_back(produsId);
     }
 }
+
+bool Furnizor::eliminaProdusFurnizat(int produsId) {
+    auto it = std::find(produseFurnizate.begin(), produseFurnizate.end(), produsId);
+    if (it == produseFurnizate.end()) {
+        return false;
+    }
+    produseFurnizate.erase(it);
+    return true;
+}
+
+bool Furnizor::furnizeazaProdusul(int produsId) const {
+    return std::find(produseFurnizate.begin(), produseFurnizate.end(), produsId) != produseFurnizate.end();
+}
+
+void Furnizor::setContact(const std::string& contactNou) {
+    contact = contactNou;
+}

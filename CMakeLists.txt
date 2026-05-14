@@ -11,6 +11,8 @@ add_library(inventory_core
     src/ProdusElectronic.cpp
     src/ProdusMobilier.cpp
     src/Furnizor.cpp
+    src/MiscareStoc.cpp
+    src/IstoricTranzactii.cpp
     src/Depozit.cpp
 )
 

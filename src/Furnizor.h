@@ -21,6 +21,9 @@ public:
     const std::vector<int>& getProduseFurnizate() const;
 
     void adaugaProdusFurnizat(int produsId);
+    bool eliminaProdusFurnizat(int produsId);
+    bool furnizeazaProdusul(int produsId) const;
+    void setContact(const std::string& contact);
 };
 
 #endif
