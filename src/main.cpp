@@ -13,7 +13,9 @@
 #include <vector>
 
 const int LATIME_UI = 72;
-const std::string FISIER_DATE = "data/produse.csv";
+const std::string FISIER_PRODUSE = "data/produse.csv";
+const std::string FISIER_FURNIZORI = "data/furnizori.csv";
+const std::string FISIER_ISTORIC = "data/istoric.csv";
 
 void linie(char caracter = '=') {
     std::cout << std::string(LATIME_UI, caracter) << '\n';
@@ -53,8 +55,10 @@ std::string textInColoana(const std::string& text, std::size_t latime) {
     return text.substr(0, latime - 3) + "...";
 }
 
-void salveazaCatalog(Depozit& depozit) {
-    depozit.salveazaProduseInFisier(FISIER_DATE);
+void salveazaToate(Depozit& depozit) {
+    depozit.salveazaProduseInFisier(FISIER_PRODUSE);
+    depozit.salveazaFurnizoriInFisier(FISIER_FURNIZORI);
+    depozit.salveazaIstoricInFisier(FISIER_ISTORIC);
 }
 
 void afiseazaProduse(const std::vector<std::shared_ptr<const Produs>>& produse) {
@@ -80,6 +84,41 @@ void afiseazaProduse(const std::vector<std::shared_ptr<const Produs>>& produse) 
                   << "| Status       : " << std::setw(53) << textInColoana(produs->getStatusStoc(), 53) << "|\n"
                   << "| Detalii      : " << std::setw(53) << textInColoana(produs->getDetaliiSpecifice(), 53) << "|\n"
                   << "+----------------------------------------------------------------------+\n";
+    }
+}
+
+void afiseazaFurnizor(const Furnizor& furnizor) {
+    std::cout << "+----------------------------------------------------------------------+\n"
+              << "| #" << std::left << std::setw(5) << furnizor.getId()
+              << std::setw(62) << textInColoana(furnizor.getNume(), 62) << "|\n"
+              << "+----------------------------------------------------------------------+\n"
+              << "| Contact      : " << std::setw(53) << textInColoana(furnizor.getContact(), 53) << "|\n"
+              << "| Produse      : " << std::right << std::setw(10) << furnizor.getProduseFurnizate().size()
+              << std::left << std::setw(43) << "" << "|\n"
+              << "+----------------------------------------------------------------------+\n";
+}
+
+void afiseazaMiscari(const std::vector<std::shared_ptr<const MiscareStoc>>& miscari) {
+    if (miscari.empty()) {
+        mesajInfo("Nu exista miscari de afisat.");
+        return;
+    }
+
+    subtitlu("Istoric tranzactii");
+    std::cout << std::left
+              << std::setw(20) << "Timestamp"
+              << std::setw(10) << "Tip"
+              << std::setw(10) << "ProdusID"
+              << std::setw(10) << "Cantitate"
+              << "Observatii\n";
+    linie('-');
+    for (const auto& miscare : miscari) {
+        std::cout << std::left
+                  << std::setw(20) << miscare->getTimestamp()
+                  << std::setw(10) << miscare->getTip()
+                  << std::setw(10) << miscare->getProdusId()
+                  << std::setw(10) << miscare->getCantitate()
+                  << miscare->getObservatii() << '\n';
     }
 }
 
@@ -116,15 +155,32 @@ std::string citesteText(const std::string& mesaj) {
     return text;
 }
 
+std::string citesteTextOptional(const std::string& mesaj) {
+    std::string text;
+    std::cout << "  " << mesaj;
+    std::getline(std::cin >> std::ws, text);
+    return text;
+}
+
 void afiseazaMeniu() {
     titlu("Warehouse Inventory Monitor");
-    std::cout << "|  1. Adauga produs              |  7. Sugestii reaprovizionare     |\n"
-              << "|  2. Elimina produs             |  8. Cauta produs dupa nume       |\n"
-              << "|  3. Restock produs             |  9. Filtreaza dupa categorie     |\n"
-              << "|  4. Vanzare produs             | 10. Sorteaza pret crescator      |\n"
-              << "|  5. Afiseaza toate produsele   | 11. Sorteaza pret descrescator   |\n"
-              << "|  6. Raport produse sub prag    | 12. Salveaza catalog             |\n"
-              << "| 13. Incarca catalog            |  0. Iesire                       |\n";
+    std::cout << "[Produse]\n"
+              << "   1. Adauga produs              5. Afiseaza toate produsele\n"
+              << "   2. Elimina produs             6. Raport produse sub prag\n"
+              << "   3. Restock produs             7. Sugestii reaprovizionare\n"
+              << "   4. Vanzare produs\n\n"
+              << "[Catalog]\n"
+              << "   8. Cauta produs dupa nume   11. Sorteaza pret descrescator\n"
+              << "   9. Filtreaza dupa categorie 12. Salveaza tot\n"
+              << "  10. Sorteaza pret crescator  13. Reincarca tot din fisiere\n\n"
+              << "[Furnizori]\n"
+              << "  14. Adauga furnizor          17. Produse pentru un furnizor\n"
+              << "  15. Listeaza furnizori       18. Reaprovizionare pe furnizor\n"
+              << "  16. Asociaza produs furnizor 19. Elimina furnizor\n\n"
+              << "[Istoric tranzactii]\n"
+              << "  20. Istoric complet          22. Ultimele N miscari\n"
+              << "  21. Istoric pentru un produs 23. Sterge istoric\n\n"
+              << "   0. Iesire\n";
     linie('=');
     std::cout << "Alege optiunea: ";
 }
@@ -134,14 +190,32 @@ int main() {
     int optiune;
 
     try {
-        if (std::filesystem::exists(FISIER_DATE)) {
-            depozit.incarcaProduseDinFisier(FISIER_DATE);
-            mesajInfo("Catalog incarcat din " + FISIER_DATE + ".");
+        if (std::filesystem::exists(FISIER_PRODUSE)) {
+            depozit.incarcaProduseDinFisier(FISIER_PRODUSE);
+            mesajInfo("Catalog incarcat din " + FISIER_PRODUSE + ".");
         } else {
-            mesajInfo("Nu exista fisier de date. Catalogul va fi creat la prima salvare.");
+            mesajInfo("Nu exista fisier de produse. Catalogul va fi creat la prima salvare.");
         }
     } catch (const std::exception& eroare) {
         mesajEroare("Catalogul nu a putut fi incarcat: " + std::string(eroare.what()));
+    }
+
+    try {
+        if (std::filesystem::exists(FISIER_FURNIZORI)) {
+            depozit.incarcaFurnizoriDinFisier(FISIER_FURNIZORI);
+            mesajInfo("Furnizori incarcati din " + FISIER_FURNIZORI + ".");
+        }
+    } catch (const std::exception& eroare) {
+        mesajEroare("Furnizorii nu au putut fi incarcati: " + std::string(eroare.what()));
+    }
+
+    try {
+        if (std::filesystem::exists(FISIER_ISTORIC)) {
+            depozit.incarcaIstoricDinFisier(FISIER_ISTORIC);
+            mesajInfo("Istoric incarcat din " + FISIER_ISTORIC + ".");
+        }
+    } catch (const std::exception& eroare) {
+        mesajEroare("Istoricul nu a putut fi incarcat: " + std::string(eroare.what()));
     }
 
     do {
@@ -178,7 +252,7 @@ int main() {
                     break;
                 }
 
-                salveazaCatalog(depozit);
+                salveazaToate(depozit);
                 mesajSucces("Produs adaugat.");
                 break;
             }
@@ -186,17 +260,18 @@ int main() {
                 subtitlu("Elimina produs");
                 int id = citesteInt("ID produs: ");
                 depozit.eliminaProdus(id);
-                salveazaCatalog(depozit);
-                mesajSucces("Produs eliminat.");
+                salveazaToate(depozit);
+                mesajSucces("Produs eliminat (si dezasociat de furnizori).");
                 break;
             }
             case 3: {
                 subtitlu("Restock produs");
                 int id = citesteInt("ID produs: ");
                 int cantitate = citesteInt("Cantitate adaugata: ");
-                Tranzactie<Intrare> tranzactie(id, cantitate, "restock");
-                depozit.restockProdus(tranzactie.getProdusId(), tranzactie.getCantitate());
-                salveazaCatalog(depozit);
+                std::string observatii = citesteTextOptional("Observatii (optional, Enter pentru gol): ");
+                Tranzactie<Intrare> tranzactie(id, cantitate, observatii);
+                depozit.restockProdus(tranzactie.getProdusId(), tranzactie.getCantitate(), tranzactie.getObservatii());
+                salveazaToate(depozit);
                 mesajSucces("Stoc actualizat prin tranzactie de tip " + tranzactie.getTip() + ".");
                 break;
             }
@@ -204,9 +279,10 @@ int main() {
                 subtitlu("Vanzare produs");
                 int id = citesteInt("ID produs: ");
                 int cantitate = citesteInt("Cantitate vanduta: ");
-                Tranzactie<Iesire> tranzactie(id, cantitate, "vanzare");
-                depozit.vindeProdus(tranzactie.getProdusId(), tranzactie.getCantitate());
-                salveazaCatalog(depozit);
+                std::string observatii = citesteTextOptional("Observatii (optional, Enter pentru gol): ");
+                Tranzactie<Iesire> tranzactie(id, cantitate, observatii);
+                depozit.vindeProdus(tranzactie.getProdusId(), tranzactie.getCantitate(), tranzactie.getObservatii());
+                salveazaToate(depozit);
                 mesajSucces("Stoc actualizat prin tranzactie de tip " + tranzactie.getTip() + ".");
                 break;
             }
@@ -238,13 +314,107 @@ int main() {
                 afiseazaProduse(depozit.sorteazaDupaPret(false));
                 break;
             case 12:
-                salveazaCatalog(depozit);
-                mesajSucces("Catalog salvat in " + FISIER_DATE + ".");
+                salveazaToate(depozit);
+                mesajSucces("Catalog, furnizori si istoric salvate.");
                 break;
-            case 13:
-                depozit.incarcaProduseDinFisier(FISIER_DATE);
-                mesajSucces("Catalog incarcat din " + FISIER_DATE + ".");
+            case 13: {
+                if (std::filesystem::exists(FISIER_PRODUSE)) {
+                    depozit.incarcaProduseDinFisier(FISIER_PRODUSE);
+                }
+                if (std::filesystem::exists(FISIER_FURNIZORI)) {
+                    depozit.incarcaFurnizoriDinFisier(FISIER_FURNIZORI);
+                }
+                if (std::filesystem::exists(FISIER_ISTORIC)) {
+                    depozit.incarcaIstoricDinFisier(FISIER_ISTORIC);
+                }
+                mesajSucces("Date reincarcate din fisiere.");
                 break;
+            }
+            case 14: {
+                subtitlu("Adauga furnizor");
+                int id = citesteInt("ID furnizor: ");
+                std::string nume = citesteText("Nume: ");
+                std::string contact = citesteTextOptional("Contact (email/telefon, optional): ");
+                depozit.adaugaFurnizor(Furnizor(id, nume, contact));
+                salveazaToate(depozit);
+                mesajSucces("Furnizor adaugat.");
+                break;
+            }
+            case 15: {
+                auto furnizori = depozit.listaFurnizori();
+                if (furnizori.empty()) {
+                    mesajInfo("Nu exista furnizori inregistrati.");
+                } else {
+                    subtitlu("Furnizori");
+                    for (const auto& furnizor : furnizori) {
+                        afiseazaFurnizor(furnizor);
+                    }
+                }
+                break;
+            }
+            case 16: {
+                subtitlu("Asociaza produs cu furnizor");
+                int furnizorId = citesteInt("ID furnizor: ");
+                int produsId = citesteInt("ID produs: ");
+                depozit.asociazaProdusCuFurnizor(furnizorId, produsId);
+                salveazaToate(depozit);
+                mesajSucces("Produs asociat cu furnizorul.");
+                break;
+            }
+            case 17: {
+                subtitlu("Produse pentru un furnizor");
+                int furnizorId = citesteInt("ID furnizor: ");
+                afiseazaFurnizor(depozit.cautaFurnizor(furnizorId));
+                afiseazaProduse(depozit.produsePentruFurnizor(furnizorId));
+                break;
+            }
+            case 18: {
+                auto sugestii = depozit.sugestiiReaprovizionarePeFurnizor();
+                if (sugestii.empty()) {
+                    mesajInfo("Niciun furnizor nu are produse sub prag.");
+                } else {
+                    titlu("Reaprovizionare pe furnizor");
+                    for (const auto& grup : sugestii) {
+                        subtitlu("Furnizor #" + std::to_string(grup.first.getId()) + " - " + grup.first.getNume());
+                        std::cout << "Contact: " << grup.first.getContact() << '\n';
+                        afiseazaProduse(grup.second);
+                    }
+                }
+                break;
+            }
+            case 19: {
+                subtitlu("Elimina furnizor");
+                int furnizorId = citesteInt("ID furnizor: ");
+                depozit.eliminaFurnizor(furnizorId);
+                salveazaToate(depozit);
+                mesajSucces("Furnizor eliminat.");
+                break;
+            }
+            case 20:
+                afiseazaMiscari(depozit.getIstoric().toateMiscarile());
+                break;
+            case 21: {
+                subtitlu("Istoric pentru un produs");
+                int produsId = citesteInt("ID produs: ");
+                afiseazaMiscari(depozit.getIstoric().miscariPentruProdus(produsId));
+                break;
+            }
+            case 22: {
+                subtitlu("Ultimele N miscari");
+                int n = citesteInt("N: ");
+                if (n < 0) {
+                    mesajEroare("N nu poate fi negativ.");
+                    break;
+                }
+                afiseazaMiscari(depozit.getIstoric().ultimele(static_cast<std::size_t>(n)));
+                break;
+            }
+            case 23: {
+                depozit.getIstoric().goleste();
+                depozit.salveazaIstoricInFisier(FISIER_ISTORIC);
+                mesajSucces("Istoricul tranzactiilor a fost sters.");
+                break;
+            }
             case 0:
                 mesajInfo("Aplicatia se inchide.");
                 break;
