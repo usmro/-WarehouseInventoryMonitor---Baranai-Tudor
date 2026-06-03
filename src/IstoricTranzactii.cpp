@@ -15,6 +15,15 @@ void valideazaTextPentruIstoric(const std::string& text) {
         throw std::invalid_argument("Textul nu poate contine sfarsit de linie in istoric.");
     }
 }
+
+int catreIntCsv(const std::string& text, int numarLinie) {
+    try {
+        return std::stoi(text);
+    } catch (const std::exception&) {
+        throw std::runtime_error("Valoare numerica invalida in istoric la linia " +
+                                 std::to_string(numarLinie) + ": '" + text + "'");
+    }
+}
 }
 
 void IstoricTranzactii::inregistreazaIntrare(int produsId, int cantitate, const std::string& observatii) {
@@ -93,8 +102,8 @@ void IstoricTranzactii::incarcaDinFisier(const std::string& caleFisier) {
         }
         std::getline(flux, observatii);
 
-        int produsId = std::stoi(idText);
-        int cantitate = std::stoi(cantitateText);
+        int produsId = catreIntCsv(idText, numarLinie);
+        int cantitate = catreIntCsv(cantitateText, numarLinie);
 
         if (tip == "Intrare") {
             incarcate.push_back(std::make_shared<MiscareIntrare>(produsId, cantitate, timestamp, observatii));
@@ -109,6 +118,19 @@ void IstoricTranzactii::incarcaDinFisier(const std::string& caleFisier) {
 }
 
 void IstoricTranzactii::salveazaInFisier(const std::string& caleFisier) const {
+    std::ostringstream continut;
+    continut << "# tip;timestamp;produsId;cantitate;observatii\n";
+    for (const auto& miscare : miscari) {
+        valideazaTextPentruIstoric(miscare->getTimestamp());
+        valideazaTextPentruIstoric(miscare->getObservatii());
+
+        continut << miscare->getTip() << ';'
+                 << miscare->getTimestamp() << ';'
+                 << miscare->getProdusId() << ';'
+                 << miscare->getCantitate() << ';'
+                 << miscare->getObservatii() << '\n';
+    }
+
     std::filesystem::path cale(caleFisier);
     if (cale.has_parent_path()) {
         std::filesystem::create_directories(cale.parent_path());
@@ -118,18 +140,7 @@ void IstoricTranzactii::salveazaInFisier(const std::string& caleFisier) const {
     if (!fisier.is_open()) {
         throw std::runtime_error("Fisierul de istoric nu poate fi deschis pentru scriere.");
     }
-
-    fisier << "# tip;timestamp;produsId;cantitate;observatii\n";
-    for (const auto& miscare : miscari) {
-        valideazaTextPentruIstoric(miscare->getTimestamp());
-        valideazaTextPentruIstoric(miscare->getObservatii());
-
-        fisier << miscare->getTip() << ';'
-               << miscare->getTimestamp() << ';'
-               << miscare->getProdusId() << ';'
-               << miscare->getCantitate() << ';'
-               << miscare->getObservatii() << '\n';
-    }
+    fisier << continut.str();
 }
 
 void IstoricTranzactii::goleste() {
