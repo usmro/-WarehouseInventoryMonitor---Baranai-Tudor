@@ -1,0 +1,47 @@
+name: CI
+
+# Ruleaza automat la fiecare push si pull request pe main si develop.
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  make:
+    name: Build & test (Make)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cod
+        uses: actions/checkout@v4
+
+      - name: Instaleaza toolchain C++
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq g++ make
+
+      - name: Versiune compilator
+        run: g++ --version
+
+      - name: Compileaza aplicatia
+        run: make
+
+      - name: Ruleaza testele unitare
+        run: make test
+
+  cmake:
+    name: Build & test (CMake)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cod
+        uses: actions/checkout@v4
+
+      - name: Instaleaza toolchain C++
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq g++ make cmake
+
+      - name: Configureaza
+        run: cmake -S . -B build
+
+      - name: Compileaza
+        run: cmake --build build
+
+      - name: Ruleaza testele (ctest)
+        run: ctest --test-dir build --output-on-failure
