@@ -1,0 +1,8 @@
+# Binary assets - never apply end-of-line conversion (it would corrupt them)
+*.pdf   binary
+*.docx  binary
+*.exe   binary
+*.zip   binary
+
+# Keep data files on LF so the C++ CSV parser never sees stray CR characters
+*.csv   text eol=lf
