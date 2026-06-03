@@ -1,0 +1,21 @@
+# tip;timestamp;produsId;cantitate;observatii
+Intrare;2026-05-04 09:15:22;101;10;comanda lunara furnizor
+Iesire;2026-05-05 11:40:08;101;3;vanzare online
+Intrare;2026-05-06 08:30:45;102;50;reaprovizionare periferice
+Iesire;2026-05-07 14:22:19;102;15;comanda client corporate
+Intrare;2026-05-08 10:05:33;104;12;livrare monitoare
+Iesire;2026-05-09 16:48:51;104;3;vanzare magazin
+Intrare;2026-05-11 09:50:12;106;20;stoc nou SSD
+Iesire;2026-05-12 13:10:27;106;5;vanzare online
+Intrare;2026-05-13 08:12:40;301;5;livrare electrocasnice
+Iesire;2026-05-14 17:30:55;301;3;vanzare showroom
+Iesire;2026-05-15 12:05:14;303;4;promotie weekend
+Intrare;2026-05-18 09:00:00;201;6;comanda mobilier
+Iesire;2026-05-19 15:25:36;201;2;vanzare client
+Intrare;2026-05-20 10:40:18;405;300;reaprovizionare echipament protectie
+Iesire;2026-05-21 11:15:42;405;100;consum intern depozit
+Iesire;2026-05-22 14:50:09;107;6;vanzare flash - stoc epuizat
+Intrare;2026-05-25 08:45:30;403;60;livrare ambalaje
+Iesire;2026-05-26 13:33:21;404;12;comanda logistica
+Iesire;2026-05-28 16:10:47;406;5;vanzare palet - stoc epuizat
+Intrare;2026-05-29 09:20:55;205;5;livrare mese conferinta
