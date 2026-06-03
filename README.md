@@ -1,5 +1,7 @@
 # WarehouseInventoryMonitor - Baranai Tudor
 
+[![CI](https://github.com/usmro/-WarehouseInventoryMonitor---Baranai-Tudor/actions/workflows/ci.yml/badge.svg)](https://github.com/usmro/-WarehouseInventoryMonitor---Baranai-Tudor/actions/workflows/ci.yml)
+
 **Autor:** Baranai Tudor
 **Grupa:** 3122B
 **Disciplina:** Programare Orientata pe Obiecte in C++
