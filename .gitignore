@@ -1,5 +1,6 @@
 # Build output
 build/
+cmake-build-*/
 bin/
 obj/
 out/
@@ -21,3 +22,6 @@ Thumbs.db
 *.log
 test_results/
 coverage/
+
+# Local-only tooling (not part of the deliverable)
+docs/genereaza_documentatie.py
