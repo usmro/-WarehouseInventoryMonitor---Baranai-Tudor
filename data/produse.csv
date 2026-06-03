@@ -1,7 +1,26 @@
 # tip;id;nume;categorie;cantitate;pret;pragAlerta;detaliuExtra
 Electronic;101;Laptop Lenovo IdeaPad;Laptopuri;12;2499.99;3;24
 Electronic;102;Mouse wireless Logitech;Periferice;35;89.99;10;12
+Electronic;103;Tastatura mecanica Redragon;Periferice;28;199.99;8;24
+Electronic;104;Monitor Dell 24 inch;Monitoare;9;749.00;3;36
+Electronic;105;Casti Bluetooth JBL;Audio;22;249.99;6;24
+Electronic;106;SSD Samsung 1TB;Componente;15;429.99;5;60
+Electronic;107;Router WiFi TP-Link;Retelistica;0;179.99;4;24
+Electronic;108;Webcam Logitech C920;Periferice;18;349.99;5;24
+Electronic;301;Frigider Arctic;Electrocasnice;2;1599.00;3;36
+Electronic;302;Masina de spalat Beko;Electrocasnice;5;1899.00;2;48
+Electronic;303;Cuptor microunde Samsung;Electrocasnice;1;399.99;2;24
 Mobilier;201;Dulap alb cu doua usi;Dulapuri;4;699.50;2;PAL melaminat
 Mobilier;202;Birou compact;Birouri;7;449.99;3;MDF
-Electronic;301;Frigider Arctic;Electrocasnice;2;1599.00;3;36
+Mobilier;203;Raft metalic depozitare;Rafturi;14;299.99;5;Metal vopsit
+Mobilier;204;Scaun ergonomic birou;Scaune;6;599.00;4;Plasa textila
+Mobilier;205;Masa conferinta;Birouri;3;1299.00;2;Lemn masiv
+Mobilier;206;Comoda cu sertare;Comode;8;459.99;3;PAL
+Mobilier;207;Biblioteca lemn;Rafturi;3;849.00;4;Lemn masiv
 Standard;401;Bec LED economic;Accesorii;60;14.99;20;
+Standard;402;Banda adeziva industriala;Accesorii;120;9.99;30;
+Standard;403;Cutii carton set 10;Ambalaje;45;24.99;15;
+Standard;404;Folie stretch palet;Ambalaje;8;39.99;10;
+Standard;405;Manusi protectie;Echipament;200;4.50;50;
+Standard;406;Palet lemn EUR;Logistica;0;59.99;5;
+Standard;407;Marker permanent negru;Accesorii;75;6.99;20;
