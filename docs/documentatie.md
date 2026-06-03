@@ -61,19 +61,21 @@ Clasa `Depozit` gestioneaza colectia de produse folosind `std::unordered_map<int
 
 Folosirea pointerilor catre clasa de baza permite stocarea produselor standard, electronice si mobilier in aceeasi colectie, cu apel polimorfic al metodelor virtuale.
 
+Pe langa produse, `Depozit` detine si colectia de furnizori
+(`std::unordered_map<int, Furnizor>`) si un obiect `IstoricTranzactii` care
+inregistreaza fiecare miscare de stoc.
+
 Metode importante:
 
-- `adaugaProdus()`
-- `eliminaProdus()`
-- `restockProdus()`
-- `vindeProdus()`
-- `cautaProduseDupaNume()`
-- `filtreazaDupaCategorie()`
-- `sorteazaDupaPret()`
-- `raportProduseSubPrag()`
-- `sugereazaReaprovizionare()`
-- `incarcaProduseDinFisier()`
-- `salveazaProduseInFisier()`
+- `adaugaProdus()`, `eliminaProdus()`
+- `restockProdus()`, `vindeProdus()` (actualizeaza stocul si inregistreaza miscarea in istoric)
+- `cautaProduseDupaNume()`, `filtreazaDupaCategorie()`, `sorteazaDupaPret()`
+- `raportProduseSubPrag()`, `sugereazaReaprovizionare()`
+- `incarcaProduseDinFisier()`, `salveazaProduseInFisier()`
+- `adaugaFurnizor()`, `eliminaFurnizor()`, `asociazaProdusCuFurnizor()`
+- `produsePentruFurnizor()`, `sugestiiReaprovizionarePeFurnizor()`
+- `incarcaFurnizoriDinFisier()`, `salveazaFurnizoriInFisier()`
+- `getIstoric()`, `incarcaIstoricDinFisier()`, `salveazaIstoricInFisier()`
 
 ### Furnizor
 
@@ -84,7 +86,31 @@ Atribute:
 - `id`
 - `nume`
 - `contact`
-- `produseFurnizate`
+- `produseFurnizate` (lista de ID-uri de produse)
+
+Metode importante:
+
+- `adaugaProdusFurnizat()` / `eliminaProdusFurnizat()` gestioneaza asocierile;
+- `furnizeazaProdusul()` verifica daca un produs este asociat furnizorului.
+
+La eliminarea unui produs din depozit, acesta este automat dezasociat de la toti
+furnizorii care il refereau.
+
+### MiscareStoc, MiscareIntrare, MiscareIesire
+
+`MiscareStoc` este o **clasa abstracta** care modeleaza o miscare de stoc
+(produs, cantitate, timestamp, observatii). Metodele `getTip()`, `getDeltaStoc()`
+si `clone()` sunt pur virtuale.
+
+- `MiscareIntrare` reprezinta un restock: `getDeltaStoc()` intoarce `+cantitate`;
+- `MiscareIesire` reprezinta o vanzare: `getDeltaStoc()` intoarce `-cantitate`.
+
+### IstoricTranzactii
+
+Container care pastreaza miscarile polimorfic, prin
+`std::vector<std::shared_ptr<MiscareStoc>>`. Ofera inregistrarea intrarilor si
+iesirilor, filtrarea pe produs, ultimele N miscari si persistenta in
+`data/istoric.csv`.
 
 ### Tranzactie<TP>
 
@@ -94,18 +120,19 @@ Clasa template `Tranzactie<TP>` modeleaza o tranzactie de stoc. Tipul poate fi `
 
 - incapsulare: atributele claselor sunt private;
 - clase si obiecte: fiecare entitate importanta este reprezentata printr-o clasa;
-- mostenire: `ProdusElectronic` si `ProdusMobilier` extind clasa `Produs`;
-- polimorfism: `getTip()`, `getDetaliiSpecifice()` si `clone()` sunt metode virtuale suprascrise;
+- mostenire: `ProdusElectronic` si `ProdusMobilier` extind `Produs`; `MiscareIntrare` si `MiscareIesire` extind `MiscareStoc`;
+- polimorfism: `getTip()`, `getDetaliiSpecifice()`, `clone()` si `getDeltaStoc()` sunt metode virtuale suprascrise;
+- clasa abstracta: `MiscareStoc` cu metode pur virtuale, folosita polimorfic prin `std::shared_ptr<MiscareStoc>`;
 - supraincarcare operatori: `+=` si `-=` pentru actualizarea cantitatii;
-- exceptii: sunt aruncate exceptii pentru ID duplicat, produs lipsa, cantitati invalide si stoc insuficient;
-- STL: se folosesc `std::unordered_map`, `std::vector` si `std::shared_ptr`;
-- persistenta datelor: catalogul este citit si salvat in format CSV;
+- exceptii: sunt aruncate exceptii pentru ID duplicat, produs lipsa, cantitati invalide, stoc insuficient si date CSV invalide;
+- STL: se folosesc `std::unordered_map`, `std::vector`, `std::shared_ptr` si `std::chrono`;
+- persistenta datelor: produsele, furnizorii si istoricul sunt citite si salvate in trei fisiere CSV separate;
 - cautare, filtrare si sortare pentru comportament de catalog;
 - template: `Tranzactie<TP>` permite reutilizarea logicii pentru intrari si iesiri.
 
 ## Testare
 
-Testele sunt implementate in `tests/test_inventory.cpp` folosind `assert`. Ele verifica adaugarea produselor, ID-uri duplicate, operatorii de cantitate, statusul de stoc, mostenirea si polimorfismul, cautarea, filtrarea, sortarea dupa pret, exceptiile, raportul de produse sub prag, sortarea sugestiilor de reaprovizionare, clasa template pentru tranzactii si persistenta produselor in fisier CSV.
+Testele sunt implementate in `tests/test_inventory.cpp` folosind `assert`. Ele verifica adaugarea produselor, ID-uri duplicate, operatorii de cantitate, statusul de stoc, mostenirea si polimorfismul, cautarea, filtrarea, sortarea dupa pret, exceptiile, raportul de produse sub prag, sortarea sugestiilor de reaprovizionare, clasa template pentru tranzactii, persistenta produselor in fisier CSV, gestionarea furnizorilor (asociere, dezasociere automata la stergere, reaprovizionare pe furnizor, persistenta) si istoricul de tranzactii (inregistrare, filtrare pe produs, ultimele N miscari, persistenta).
 
 ## Functionalitate unica
 
@@ -119,7 +146,7 @@ Functionalitatea principala a proiectului este monitorizarea stocului printr-un 
 
 ## Posibile imbunatatiri
 
-- istoric complet al tranzactiilor intr-un fisier separat;
-- cautare dupa nume;
-- interfata grafica;
-- rapoarte exportate in CSV;
+- interfata grafica (de exemplu cu o biblioteca de UI);
+- export al rapoartelor (produse sub prag, valoare totala stoc) in CSV sau HTML;
+- raport cu valoarea totala a stocului pe categorii;
+- baza de date reala (de exemplu SQLite) in locul fisierelor CSV.

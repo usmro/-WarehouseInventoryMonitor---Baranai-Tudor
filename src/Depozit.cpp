@@ -6,6 +6,7 @@
 #include <cctype>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -30,6 +31,24 @@ void valideazaTextPentruFisier(const std::string& text) {
 void valideazaTextFurnizor(const std::string& text) {
     if (text.find(';') != std::string::npos || text.find(',') != std::string::npos) {
         throw std::invalid_argument("Textul nu poate contine ';' sau ',' in fisierul de furnizori.");
+    }
+}
+
+int catreIntCsv(const std::string& text, int numarLinie) {
+    try {
+        return std::stoi(text);
+    } catch (const std::exception&) {
+        throw std::runtime_error("Valoare numerica intreaga invalida la linia " +
+                                 std::to_string(numarLinie) + ": '" + text + "'");
+    }
+}
+
+double catreDoubleCsv(const std::string& text, int numarLinie) {
+    try {
+        return std::stod(text);
+    } catch (const std::exception&) {
+        throw std::runtime_error("Valoare numerica zecimala invalida la linia " +
+                                 std::to_string(numarLinie) + ": '" + text + "'");
     }
 }
 
@@ -199,14 +218,14 @@ void Depozit::incarcaProduseDinFisier(const std::string& caleFisier) {
         }
         std::getline(flux, detaliuExtra, ';');
 
-        int id = std::stoi(idText);
-        int cantitate = std::stoi(cantitateText);
-        double pret = std::stod(pretText);
-        int prag = std::stoi(pragText);
+        int id = catreIntCsv(idText, numarLinie);
+        int cantitate = catreIntCsv(cantitateText, numarLinie);
+        double pret = catreDoubleCsv(pretText, numarLinie);
+        int prag = catreIntCsv(pragText, numarLinie);
         std::shared_ptr<Produs> produs;
 
         if (tip == "Electronic") {
-            produs = std::make_shared<ProdusElectronic>(id, nume, categorie, cantitate, pret, prag, std::stoi(detaliuExtra));
+            produs = std::make_shared<ProdusElectronic>(id, nume, categorie, cantitate, pret, prag, catreIntCsv(detaliuExtra, numarLinie));
         } else if (tip == "Mobilier") {
             produs = std::make_shared<ProdusMobilier>(id, nume, categorie, cantitate, pret, prag, detaliuExtra);
         } else if (tip == "Standard") {
@@ -221,10 +240,31 @@ void Depozit::incarcaProduseDinFisier(const std::string& caleFisier) {
         produseIncarcate.emplace(produs->getId(), produs);
     }
 
-    produse = produseIncarcate;
+    produse = std::move(produseIncarcate);
 }
 
 void Depozit::salveazaProduseInFisier(const std::string& caleFisier) const {
+    // Construim intai tot continutul si validam: daca un text contine ';',
+    // exceptia este aruncata inainte sa atingem fisierul, deci CSV-ul existent
+    // ramane intact (nu mai poate fi trunchiat la jumatate).
+    std::ostringstream continut;
+    continut << std::fixed << std::setprecision(2);
+    continut << "# tip;id;nume;categorie;cantitate;pret;pragAlerta;detaliuExtra\n";
+    for (const auto& produs : listaProduse()) {
+        valideazaTextPentruFisier(produs->getNume());
+        valideazaTextPentruFisier(produs->getCategorie());
+        valideazaTextPentruFisier(produs->getDetaliuPersistenta());
+
+        continut << produs->getTip() << ';'
+                 << produs->getId() << ';'
+                 << produs->getNume() << ';'
+                 << produs->getCategorie() << ';'
+                 << produs->getCantitate() << ';'
+                 << produs->getPret() << ';'
+                 << produs->getPragAlerta() << ';'
+                 << produs->getDetaliuPersistenta() << '\n';
+    }
+
     std::filesystem::path cale(caleFisier);
     if (cale.has_parent_path()) {
         std::filesystem::create_directories(cale.parent_path());
@@ -234,22 +274,7 @@ void Depozit::salveazaProduseInFisier(const std::string& caleFisier) const {
     if (!fisier.is_open()) {
         throw std::runtime_error("Fisierul de date nu poate fi deschis pentru scriere.");
     }
-
-    fisier << "# tip;id;nume;categorie;cantitate;pret;pragAlerta;detaliuExtra\n";
-    for (const auto& produs : listaProduse()) {
-        valideazaTextPentruFisier(produs->getNume());
-        valideazaTextPentruFisier(produs->getCategorie());
-        valideazaTextPentruFisier(produs->getDetaliuPersistenta());
-
-        fisier << produs->getTip() << ';'
-               << produs->getId() << ';'
-               << produs->getNume() << ';'
-               << produs->getCategorie() << ';'
-               << produs->getCantitate() << ';'
-               << produs->getPret() << ';'
-               << produs->getPragAlerta() << ';'
-               << produs->getDetaliuPersistenta() << '\n';
-    }
+    fisier << continut.str();
 }
 
 void Depozit::adaugaFurnizor(const Furnizor& furnizor) {
@@ -378,7 +403,7 @@ void Depozit::incarcaFurnizoriDinFisier(const std::string& caleFisier) {
         }
         std::getline(flux, produseText, ';');
 
-        int id = std::stoi(idText);
+        int id = catreIntCsv(idText, numarLinie);
         Furnizor furnizor(id, nume, contact);
 
         if (!produseText.empty()) {
@@ -388,7 +413,7 @@ void Depozit::incarcaFurnizoriDinFisier(const std::string& caleFisier) {
                 if (produsIdText.empty()) {
                     continue;
                 }
-                furnizor.adaugaProdusFurnizat(std::stoi(produsIdText));
+                furnizor.adaugaProdusFurnizat(catreIntCsv(produsIdText, numarLinie));
             }
         }
 
@@ -402,6 +427,26 @@ void Depozit::incarcaFurnizoriDinFisier(const std::string& caleFisier) {
 }
 
 void Depozit::salveazaFurnizoriInFisier(const std::string& caleFisier) const {
+    std::ostringstream continut;
+    continut << "# id;nume;contact;produseIds (separate cu virgula)\n";
+    for (const auto& furnizor : listaFurnizori()) {
+        valideazaTextFurnizor(furnizor.getNume());
+        valideazaTextFurnizor(furnizor.getContact());
+
+        continut << furnizor.getId() << ';'
+                 << furnizor.getNume() << ';'
+                 << furnizor.getContact() << ';';
+
+        const auto& produseIds = furnizor.getProduseFurnizate();
+        for (std::size_t i = 0; i < produseIds.size(); ++i) {
+            if (i > 0) {
+                continut << ',';
+            }
+            continut << produseIds[i];
+        }
+        continut << '\n';
+    }
+
     std::filesystem::path cale(caleFisier);
     if (cale.has_parent_path()) {
         std::filesystem::create_directories(cale.parent_path());
@@ -411,25 +456,7 @@ void Depozit::salveazaFurnizoriInFisier(const std::string& caleFisier) const {
     if (!fisier.is_open()) {
         throw std::runtime_error("Fisierul de furnizori nu poate fi deschis pentru scriere.");
     }
-
-    fisier << "# id;nume;contact;produseIds (separate cu virgula)\n";
-    for (const auto& furnizor : listaFurnizori()) {
-        valideazaTextFurnizor(furnizor.getNume());
-        valideazaTextFurnizor(furnizor.getContact());
-
-        fisier << furnizor.getId() << ';'
-               << furnizor.getNume() << ';'
-               << furnizor.getContact() << ';';
-
-        const auto& produseIds = furnizor.getProduseFurnizate();
-        for (std::size_t i = 0; i < produseIds.size(); ++i) {
-            if (i > 0) {
-                fisier << ',';
-            }
-            fisier << produseIds[i];
-        }
-        fisier << '\n';
-    }
+    fisier << continut.str();
 }
 
 const IstoricTranzactii& Depozit::getIstoric() const {

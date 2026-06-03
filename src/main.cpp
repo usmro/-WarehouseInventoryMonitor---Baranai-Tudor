@@ -134,6 +134,9 @@ int citesteInt(const std::string& mesaj) {
         std::cout << "  Valoare invalida. Incearca din nou: ";
         curataInput();
     }
+    // Consumam restul liniei pentru ca o citire de text ulterioara sa nu
+    // primeasca newline-ul ramas in buffer.
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return valoare;
 }
 
@@ -144,6 +147,7 @@ double citesteDouble(const std::string& mesaj) {
         std::cout << "  Valoare invalida. Incearca din nou: ";
         curataInput();
     }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return valoare;
 }
 
@@ -156,10 +160,38 @@ std::string citesteText(const std::string& mesaj) {
 }
 
 std::string citesteTextOptional(const std::string& mesaj) {
+    // Fara `>> std::ws`: altfel un Enter gol ar fi consumat ca whitespace si
+    // campul optional nu ar putea fi lasat gol.
     std::string text;
     std::cout << "  " << mesaj;
-    std::getline(std::cin >> std::ws, text);
+    std::getline(std::cin, text);
     return text;
+}
+
+bool contineCaractereInterzise(const std::string& text, const std::string& interzise) {
+    return text.find_first_of(interzise) != std::string::npos;
+}
+
+std::string citesteTextFiltrat(const std::string& mesaj, const std::string& interzise) {
+    while (true) {
+        std::string text = citesteText(mesaj);
+        if (contineCaractereInterzise(text, interzise)) {
+            std::cout << "  Caractere interzise (" << interzise << "). Incearca din nou.\n";
+            continue;
+        }
+        return text;
+    }
+}
+
+std::string citesteTextOptionalFiltrat(const std::string& mesaj, const std::string& interzise) {
+    while (true) {
+        std::string text = citesteTextOptional(mesaj);
+        if (contineCaractereInterzise(text, interzise)) {
+            std::cout << "  Caractere interzise (" << interzise << "). Incearca din nou.\n";
+            continue;
+        }
+        return text;
+    }
 }
 
 void afiseazaMeniu() {
@@ -233,8 +265,8 @@ int main() {
                 std::cout << "  Tip produs: 1=Standard, 2=Electronic, 3=Mobilier\n";
                 int tipProdus = citesteInt("Tip: ");
                 int id = citesteInt("ID: ");
-                std::string nume = citesteText("Nume: ");
-                std::string categorie = citesteText("Categorie: ");
+                std::string nume = citesteTextFiltrat("Nume: ", ";");
+                std::string categorie = citesteTextFiltrat("Categorie: ", ";");
                 int cantitate = citesteInt("Cantitate: ");
                 double pret = citesteDouble("Pret: ");
                 int prag = citesteInt("Prag alerta: ");
@@ -243,7 +275,7 @@ int main() {
                     int garantie = citesteInt("Garantie luni: ");
                     depozit.adaugaProdus(std::make_shared<ProdusElectronic>(id, nume, categorie, cantitate, pret, prag, garantie));
                 } else if (tipProdus == 3) {
-                    std::string material = citesteText("Material: ");
+                    std::string material = citesteTextFiltrat("Material: ", ";");
                     depozit.adaugaProdus(std::make_shared<ProdusMobilier>(id, nume, categorie, cantitate, pret, prag, material));
                 } else if (tipProdus == 1) {
                     depozit.adaugaProdus(std::make_shared<Produs>(id, nume, categorie, cantitate, pret, prag));
@@ -333,8 +365,8 @@ int main() {
             case 14: {
                 subtitlu("Adauga furnizor");
                 int id = citesteInt("ID furnizor: ");
-                std::string nume = citesteText("Nume: ");
-                std::string contact = citesteTextOptional("Contact (email/telefon, optional): ");
+                std::string nume = citesteTextFiltrat("Nume: ", ";,");
+                std::string contact = citesteTextOptionalFiltrat("Contact (email/telefon, optional): ", ";,");
                 depozit.adaugaFurnizor(Furnizor(id, nume, contact));
                 salveazaToate(depozit);
                 mesajSucces("Furnizor adaugat.");
