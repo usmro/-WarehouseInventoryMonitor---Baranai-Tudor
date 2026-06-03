@@ -65,6 +65,59 @@ Makefile    build and test commands
 README.md   project overview and instructions
 ```
 
+## Cum deschizi proiectul (mini-tutorial)
+
+Pasi rapizi pentru a obtine si rula proiectul de la zero.
+
+### 1. Cloneaza repository-ul de pe GitHub
+
+```bash
+git clone https://github.com/usmro/-WarehouseInventoryMonitor---Baranai-Tudor.git
+cd -WarehouseInventoryMonitor---Baranai-Tudor
+```
+
+Pentru ultima versiune de lucru, treci pe branch-ul `develop`:
+
+```bash
+git checkout develop
+```
+
+### 2. Asigura-te ca ai uneltele necesare
+
+- un compilator C++17 (`g++`, `clang++` sau MSVC);
+- `make` sau `cmake`.
+
+Pe Windows poti folosi MSYS2/MinGW (`g++`) sau Visual Studio. Pe Linux/macOS
+`g++` si `make` sunt de obicei deja instalate sau disponibile prin managerul de
+pachete.
+
+### 3. Compileaza si ruleaza
+
+Cu `make`:
+
+```bash
+make
+make run
+```
+
+sau cu CMake:
+
+```bash
+cmake -S . -B build
+cmake --build build
+./build/warehouse_inventory
+```
+
+La pornire aplicatia incarca automat datele din `data/` (daca exista) si
+afiseaza meniul din consola.
+
+### 4. (Optional) deschide-l intr-un IDE
+
+- **CLion / JetBrains:** `File > Open` si selecteaza folderul proiectului;
+  `CMakeLists.txt` este detectat automat ca proiect.
+- **VS Code:** deschide folderul, instaleaza extensia *C/C++* (Microsoft) si,
+  optional, *CMake Tools*, apoi compileaza din terminal cu `make` sau CMake.
+
 ## Build
 
 Requirements:
