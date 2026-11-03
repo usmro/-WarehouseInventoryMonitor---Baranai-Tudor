@@ -5,163 +5,67 @@
 **Autor:** Baranai Tudor
 **Grupa:** 3122B
 **Disciplina:** Programare Orientata pe Obiecte in C++
+**Tema:** Sistem de Monitorizare a Stocurilor unui Depozit
 
-C++ console application for warehouse stock monitoring. The project manages products, categories, quantities, prices, low-stock alerts and persistent catalog data using Object-Oriented Programming concepts.
+A C++17 console application for running a small warehouse. It tracks products, stock levels, suppliers and every stock movement, warns about low stock, and keeps everything in CSV files between runs. The menus and messages are in Romanian.
 
-## Project Theme
+## What it does
 
-Tema 3122B: Sistem de Monitorizare a Stocurilor unui Depozit
+- **Products:** add, remove, restock and sell products. Each product has a category, price, quantity and alert threshold, and shows a status: `In stoc`, `Stoc redus` or `Indisponibil`.
+- **Catalog view:** search by name, filter by category, and sort by price, shown as product cards (see below).
+- **Low stock:** a report of products under their alert threshold, plus reorder suggestions sorted by how little is left.
+- **Suppliers:** link products to suppliers, then get the reorder list grouped per supplier, so one order can go to each supplier.
+- **Transaction history:** every restock and sale is saved with a timestamp. You can view all of it, filter by product, or show the last N movements.
+- **Persistence:** products, suppliers and history are loaded from `data/` at startup and saved again after every change.
 
-The application allows a warehouse operator to:
-
-- add and remove products;
-- restock products;
-- register product sales;
-- keep product data stored in `data/produse.csv`;
-- list all products;
-- display products in a catalog style, inspired by stores like IKEA or Altex;
-- search products by name;
-- filter products by category;
-- sort products by price;
-- generate a report with products below the alert threshold;
-- suggest products that should be reordered;
-- manage suppliers and link them to the products they provide;
-- generate reorder suggestions grouped per supplier;
-- keep a full, timestamped transaction history of every restock and sale.
-
-The catalog structure is inspired by product listing systems used in online stores: products have categories, prices, stock status, filtering, sorting and type-specific details.
-
-## OOP Concepts Used
-
-| Concept | Where it is used |
-|---------|------------------|
-| Classes and objects | `Produs`, `ProdusElectronic`, `ProdusMobilier`, `Depozit`, `Furnizor`, `Tranzactie<TP>`, `MiscareStoc`, `IstoricTranzactii` |
-| Encapsulation | private fields with controlled public methods |
-| Inheritance | `ProdusElectronic` / `ProdusMobilier` extend `Produs`; `MiscareIntrare` / `MiscareIesire` extend `MiscareStoc` |
-| Polymorphism | virtual methods `getTip()`, `getDetaliiSpecifice()`, `clone()`, `getDeltaStoc()` |
-| Abstract class | `MiscareStoc` with pure virtual methods, stored polymorphically through `std::shared_ptr<MiscareStoc>` |
-| STL | `std::unordered_map`, `std::vector`, `std::shared_ptr`, `std::chrono` |
-| Operator overloading | `Produs::operator+=` and `Produs::operator-=` |
-| Templates | `Tranzactie<Intrare>` and `Tranzactie<Iesire>` |
-| Exceptions | duplicate IDs, missing products, invalid quantities, invalid CSV data |
-| File persistence | products, suppliers and history stored in three separate CSV files |
-
-## Product Types
-
-The project uses inheritance to differentiate products:
-
-- `Produs` - standard warehouse product;
-- `ProdusElectronic` - adds warranty in months;
-- `ProdusMobilier` - adds material information.
-
-The warehouse stores products polymorphically using `std::shared_ptr<Produs>`, so the console catalog can display type-specific details without knowing the exact derived class in advance.
-
-## Project Structure
+Products are shown as catalog cards:
 
 ```text
-src/        C++ source files
-tests/      simple unit tests
-docs/       project documentation and UML notes
-data/       CSV product catalog used as persistent storage
-Makefile    build and test commands
-README.md   project overview and instructions
++----------------------------------------------------------------------+
+| #101  Laptop Lenovo                                                  |
++----------------------------------------------------------------------+
+| Tip          : Electronic                                            |
+| Categorie    : Laptopuri                                             |
+| Pret         :    2499.99 lei                                        |
+| Stoc         :         12 bucati                                     |
+| Prag alerta  :          3                                            |
+| Status       : In stoc                                               |
+| Detalii      : Garantie: 24 luni                                     |
++----------------------------------------------------------------------+
 ```
 
-## Cum deschizi proiectul (mini-tutorial)
+## Build and run
 
-Pasi rapizi pentru a obtine si rula proiectul de la zero.
-
-### 1. Cloneaza repository-ul de pe GitHub
+You need a C++17 compiler (`g++`, `clang++` or MSVC) and either `make` or `cmake`. On Windows, MSYS2/MinGW or Visual Studio works.
 
 ```bash
 git clone https://github.com/usmro/-WarehouseInventoryMonitor---Baranai-Tudor.git
 cd -WarehouseInventoryMonitor---Baranai-Tudor
 ```
 
-Pentru ultima versiune de lucru, treci pe branch-ul `develop`:
+With `make`:
 
 ```bash
-git checkout develop
+make          # build
+make run      # start the app
+make test     # run the unit tests
+make clean    # remove build files
 ```
 
-### 2. Asigura-te ca ai uneltele necesare
-
-- un compilator C++17 (`g++`, `clang++` sau MSVC);
-- `make` sau `cmake`.
-
-Pe Windows poti folosi MSYS2/MinGW (`g++`) sau Visual Studio. Pe Linux/macOS
-`g++` si `make` sunt de obicei deja instalate sau disponibile prin managerul de
-pachete.
-
-### 3. Compileaza si ruleaza
-
-Cu `make`:
-
-```bash
-make
-make run
-```
-
-sau cu CMake:
+With CMake:
 
 ```bash
 cmake -S . -B build
 cmake --build build
 ./build/warehouse_inventory
-```
-
-La pornire aplicatia incarca automat datele din `data/` (daca exista) si
-afiseaza meniul din consola.
-
-### 4. (Optional) deschide-l intr-un IDE
-
-- **CLion / JetBrains:** `File > Open` si selecteaza folderul proiectului;
-  `CMakeLists.txt` este detectat automat ca proiect.
-- **VS Code:** deschide folderul, instaleaza extensia *C/C++* (Microsoft) si,
-  optional, *CMake Tools*, apoi compileaza din terminal cu `make` sau CMake.
-
-## Build
-
-Requirements:
-
-- C++17 compiler, for example `g++`
-- `make` or `cmake`
-
-Build the application:
-
-```bash
-make
-```
-
-Run the application:
-
-```bash
-make run
-```
-
-Run tests:
-
-```bash
-make test
-```
-
-Clean generated files:
-
-```bash
-make clean
-```
-
-Alternative CMake build:
-
-```bash
-cmake -S . -B build
-cmake --build build
 ctest --test-dir build
 ```
 
-## Main Menu
+In CLion, open the folder and it picks up `CMakeLists.txt`. In VS Code, install the C/C++ extension (and optionally CMake Tools) and build from the terminal.
 
-The menu is grouped in four sections: products, catalog, suppliers, transaction history.
+GitHub Actions builds the project and runs the 20 unit tests with both `make` and CMake on every push to `main` and `develop`.
+
+## Main menu
 
 ```text
 [Produse]
@@ -187,100 +91,30 @@ The menu is grouped in four sections: products, catalog, suppliers, transaction 
    0. Iesire
 ```
 
-## Data Storage
+## OOP concepts used
 
-The application persists three separate CSV files under `data/`. All three are automatically loaded at startup (when they exist) and rewritten after every mutating operation.
+| Concept | Where it is used |
+|---------|------------------|
+| Classes and objects | `Produs`, `ProdusElectronic`, `ProdusMobilier`, `Depozit`, `Furnizor`, `Tranzactie<TP>`, `MiscareStoc`, `IstoricTranzactii` |
+| Encapsulation | private fields with controlled public methods |
+| Inheritance | `ProdusElectronic` and `ProdusMobilier` extend `Produs`; `MiscareIntrare` and `MiscareIesire` extend `MiscareStoc` |
+| Polymorphism | virtual methods `getTip()`, `getDetaliiSpecifice()`, `clone()`, `getDeltaStoc()` |
+| Abstract class | `MiscareStoc` with pure virtual methods, stored through `std::shared_ptr<MiscareStoc>` |
+| STL | `std::unordered_map`, `std::vector`, `std::shared_ptr`, `std::chrono` |
+| Operator overloading | `Produs::operator+=` and `Produs::operator-=` |
+| Templates | `Tranzactie<Intrare>` and `Tranzactie<Iesire>` |
+| Exceptions | duplicate IDs, missing products, invalid quantities, invalid CSV data |
+| File persistence | products, suppliers and history in three separate CSV files |
 
-### `data/produse.csv` - product catalog
+### Product types
 
-```text
-tip;id;nume;categorie;cantitate;pret;pragAlerta;detaliuExtra
-```
+- `Produs`: a standard warehouse product.
+- `ProdusElectronic`: adds a warranty in months.
+- `ProdusMobilier`: adds the material.
 
-Example:
+The warehouse stores products as `std::shared_ptr<Produs>`, so the catalog can show type-specific details without knowing the exact class.
 
-```text
-Electronic;101;Laptop Lenovo IdeaPad;Laptopuri;12;2499.99;3;24
-Mobilier;201;Dulap alb cu doua usi;Dulapuri;4;699.50;2;PAL melaminat
-```
-
-### `data/furnizori.csv` - suppliers and their product associations
-
-```text
-id;nume;contact;produseIds (separated by commas)
-```
-
-Example:
-
-```text
-10;ACME SRL;acme@example.ro;101,102
-20;TechDist;tech@example.ro;301
-```
-
-### `data/istoric.csv` - transaction history
-
-Every restock and every sale is recorded with a real timestamp.
-
-```text
-tip;timestamp;produsId;cantitate;observatii
-```
-
-Example:
-
-```text
-Intrare;2026-05-14 18:45:38;101;5;comanda lunara
-Iesire;2026-05-14 18:50:11;101;2;vanzare online
-```
-
-## Catalog Display
-
-Products are shown in a catalog format:
-
-```text
-+----------------------------------------------------------------------+
-| #101  Laptop Lenovo                                                  |
-+----------------------------------------------------------------------+
-| Tip          : Electronic                                            |
-| Categorie    : Laptopuri                                             |
-| Pret         :    2499.99 lei                                        |
-| Stoc         :         12 bucati                                     |
-| Prag alerta  :          3                                            |
-| Status       : In stoc                                               |
-| Detalii      : Garantie: 24 luni                                     |
-+----------------------------------------------------------------------+
-```
-
-Possible stock statuses:
-
-- `In stoc`
-- `Stoc redus`
-- `Indisponibil`
-
-## Unique Feature
-
-The main feature of this project is the stock monitoring catalog:
-
-- products remain stored between runs through CSV persistence;
-- each product has a visible stock status;
-- low-stock products are reported automatically;
-- reorder suggestions are sorted by remaining quantity;
-- different product types display different details through polymorphism.
-
-## Suppliers
-
-Suppliers (`Furnizor`) are managed alongside the product catalog and persisted in `data/furnizori.csv`. From the menu the operator can:
-
-- add and remove suppliers;
-- associate a product with a supplier;
-- list every supplier with their product count;
-- list all products of a given supplier;
-- generate a reorder report grouped per supplier - each supplier appears with the products below their alert threshold, so a single purchase order can be sent per supplier.
-
-When a product is removed it is automatically dissociated from every supplier that referenced it.
-
-## Transaction History
-
-Every restock and every sale is automatically recorded in an in-memory history and persisted in `data/istoric.csv`. The history is built on a small polymorphic hierarchy:
+### Stock movements
 
 ```text
 MiscareStoc (abstract)
@@ -288,9 +122,54 @@ MiscareStoc (abstract)
 +-- MiscareIesire     getDeltaStoc() -> -cantitate
 ```
 
-Movements are stored polymorphically through `std::shared_ptr<MiscareStoc>` inside the `IstoricTranzactii` container. The operator can:
+Movements are stored as `std::shared_ptr<MiscareStoc>` in `IstoricTranzactii`. When a product is removed, it is also removed from every supplier that listed it.
 
-- view the entire history in a tabular format;
-- filter the history for a specific product ID;
-- view only the last N movements;
-- clear the history.
+## Data files
+
+All three files use `;` as the separator. Lines starting with `#` are headers.
+
+**`data/produse.csv`:** the product catalog.
+
+```text
+tip;id;nume;categorie;cantitate;pret;pragAlerta;detaliuExtra
+Electronic;101;Laptop Lenovo IdeaPad;Laptopuri;12;2499.99;3;24
+Mobilier;201;Dulap alb cu doua usi;Dulapuri;4;699.50;2;PAL melaminat
+```
+
+**`data/furnizori.csv`:** suppliers and the products they provide.
+
+```text
+id;nume;contact;produseIds (separated by commas)
+10;ElectroDist SRL;electrodist@example.com;101,102,103,104
+```
+
+**`data/istoric.csv`:** the transaction history.
+
+```text
+tip;timestamp;produsId;cantitate;observatii
+Intrare;2026-05-04 09:15:22;101;10;comanda lunara furnizor
+Iesire;2026-05-05 11:40:08;101;3;vanzare online
+```
+
+The sample data is made up, and the supplier emails use the reserved `example.com` domain.
+
+## Project structure
+
+```text
+src/        C++ source files
+tests/      unit tests
+docs/       project documentation (Markdown, PDF, DOCX) and UML notes
+data/       CSV files used as storage
+Makefile    build and test commands
+```
+
+## Known limitations
+
+- **One user at a time.** The CSV files are rewritten after every change, with no locking, so two copies of the app running at once would overwrite each other.
+- **Names can't contain `;`,** and supplier names can't contain `,` either, because those are the CSV separators. The app rejects them.
+- **Clearing the history is permanent.** There is no undo.
+- **Romanian interface only,** and prices are always in lei.
+
+## Rights
+
+© 2026 Baranai Tudor. All rights reserved. This code is public so it can be read and graded, not reused.
