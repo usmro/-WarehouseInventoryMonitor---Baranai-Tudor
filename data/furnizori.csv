@@ -1,9 +1,9 @@
 # id;nume;contact;produseIds (separate cu virgula)
-10;ElectroDist SRL;contact@electrodist.ro;101,102,103,104
-20;AudioVideo Pro;office@avpro.ro;105,106,108
-30;HomeAppliance SA;vanzari@homeappliance.ro;301,302,303
-40;MobilExpert;comenzi@mobilexpert.ro;201,202,203,204
-50;Depozit Lemn SRL;lemn@depozitlemn.ro;205,206,207
-60;PackPro Solutions;info@packpro.ro;402,403,404,406
-70;NetConnect;suport@netconnect.ro;107
-80;Protectia Muncii SA;office@protectiamuncii.ro;401,405,407
+10;ElectroDist SRL;electrodist@example.com;101,102,103,104
+20;AudioVideo Pro;avpro@example.com;105,106,108
+30;HomeAppliance SA;homeappliance@example.com;301,302,303
+40;MobilExpert;mobilexpert@example.com;201,202,203,204
+50;Depozit Lemn SRL;depozitlemn@example.com;205,206,207
+60;PackPro Solutions;packpro@example.com;402,403,404,406
+70;NetConnect;netconnect@example.com;107
+80;Protectia Muncii SA;protectiamuncii@example.com;401,405,407
