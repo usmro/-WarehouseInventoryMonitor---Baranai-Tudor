@@ -259,7 +259,7 @@ void testFurnizorAsociereSiCautare() {
     Depozit depozit;
     depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
     depozit.adaugaProdus(Produs(2, "Mouse", "Periferice", 20, 80.0, 5));
-    depozit.adaugaFurnizor(Furnizor(10, "ACME SRL", "acme@example.ro"));
+    depozit.adaugaFurnizor(Furnizor(10, "ACME SRL", "acme@example.com"));
     depozit.asociazaProdusCuFurnizor(10, 1);
     depozit.asociazaProdusCuFurnizor(10, 2);
 
@@ -274,7 +274,7 @@ void testFurnizorAsociereSiCautare() {
 void testEliminareProdusScoateFurnizor() {
     Depozit depozit;
     depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
-    depozit.adaugaFurnizor(Furnizor(10, "ACME", "acme@example.ro"));
+    depozit.adaugaFurnizor(Furnizor(10, "ACME", "acme@example.com"));
     depozit.asociazaProdusCuFurnizor(10, 1);
 
     depozit.eliminaProdus(1);
@@ -288,8 +288,8 @@ void testReaprovizionarePeFurnizor() {
     depozit.adaugaProdus(Produs(2, "Mouse", "Periferice", 20, 80.0, 5));
     depozit.adaugaProdus(Produs(3, "Tastatura", "Periferice", 0, 120.0, 4));
 
-    depozit.adaugaFurnizor(Furnizor(10, "ACME", "acme@example.ro"));
-    depozit.adaugaFurnizor(Furnizor(20, "TechDist", "tech@example.ro"));
+    depozit.adaugaFurnizor(Furnizor(10, "ACME", "acme@example.com"));
+    depozit.adaugaFurnizor(Furnizor(20, "TechDist", "tech@example.com"));
 
     depozit.asociazaProdusCuFurnizor(10, 1);
     depozit.asociazaProdusCuFurnizor(10, 2);
@@ -313,7 +313,7 @@ void testFurnizorPersistenta() {
     Depozit depozit;
     depozit.adaugaProdus(Produs(1, "Laptop", "Electronice", 5, 2500.0, 2));
     depozit.adaugaProdus(Produs(2, "Mouse", "Periferice", 20, 80.0, 5));
-    depozit.adaugaFurnizor(Furnizor(10, "ACME SRL", "acme@example.ro"));
+    depozit.adaugaFurnizor(Furnizor(10, "ACME SRL", "acme@example.com"));
     depozit.adaugaFurnizor(Furnizor(20, "TechDist", ""));
     depozit.asociazaProdusCuFurnizor(10, 1);
     depozit.asociazaProdusCuFurnizor(10, 2);
